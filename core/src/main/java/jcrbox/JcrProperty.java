@@ -50,8 +50,9 @@ public interface JcrProperty<P extends Enum<P> & JcrProperty<P>> {
 
     /**
      * For a given enum {@code PT}, if another enum {@code P} declares a property whose
-     * {@link PropertyDefinition#constrainAsEnum()} is set to {@code PT}, this annotation can be used to mark one of
-     * {@code PT}'s constants as the default value for the property defined by the member of {@code P}.
+     * {@link PropertyDefinition#constrainAsEnum()} is set to {@code PT}, this annotation can be used to mark one (or,
+     * for multi-valued properties, more) of {@code PT}'s constants as default values for the property defined by the
+     * member of {@code P}.
      */
     @Documented
     @Retention(RetentionPolicy.RUNTIME)
@@ -222,7 +223,7 @@ public interface JcrProperty<P extends Enum<P> & JcrProperty<P>> {
 
     /**
      * Configure a {@link PropertyDefinitionTemplate} from this enum constant.
-     * 
+     *
      * @param pdt
      * @param valueFactory
      * @return {@code pdt}
@@ -242,10 +243,10 @@ public interface JcrProperty<P extends Enum<P> & JcrProperty<P>> {
             void alidate() {
                 final PropertyDefinition def = EnumHelper.getAnnotation(p, PropertyDefinition.class);
                 final Object[] desc = new Object[] { p.getDeclaringClass(), p.name() };
-                Validate.validState((def.constrainAsEnum().length == 0) || (def.valueConstraints().length == 0),
+                Validate.validState(def.constrainAsEnum().length == 0 || def.valueConstraints().length == 0,
                     "Cannot specify both constrainAsEnum and valueConstraints: %s.%s", desc);
                 Validate.validState(
-                    (def.constrainAsEnum().length == 0) || ((def.value() < 0) || (def.value() == PropertyType.STRING)),
+                    def.constrainAsEnum().length == 0 || def.value() < 0 || def.value() == PropertyType.STRING,
                     "constrainAsEnum implies STRING property type: %s.%s", desc);
                 Validate.validState(def.constrainAsEnum().length <= 1,
                     "constrainAsEnum is permitted a maximum of 1 value: %s.%s", desc);
@@ -360,7 +361,7 @@ public interface JcrProperty<P extends Enum<P> & JcrProperty<P>> {
 
     /**
      * Obtain a qualified form of this {@link JcrProperty} relative to {@code node}.
-     * 
+     *
      * @param node
      * @return {@link QualifedProperty}
      */

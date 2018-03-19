@@ -37,7 +37,7 @@ public class QualifedProperty<N extends Enum<N> & JcrNode<N>, P extends Enum<P> 
 
     /**
      * Create a new {@link QualifedProperty} instance.
-     * 
+     *
      * @param node
      * @param property
      */
@@ -46,5 +46,4 @@ public class QualifedProperty<N extends Enum<N> & JcrNode<N>, P extends Enum<P> 
         this.node = node;
         this.property = property;
     }
-
 }

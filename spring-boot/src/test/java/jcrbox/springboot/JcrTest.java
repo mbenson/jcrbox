@@ -32,7 +32,6 @@ import javax.jcr.nodetype.NodeType;
 import javax.jcr.nodetype.NodeTypeManager;
 import javax.jcr.query.qom.Comparison;
 import javax.jcr.query.qom.Constraint;
-import javax.jcr.query.qom.QueryObjectModel;
 
 import org.apache.commons.io.IOUtils;
 import org.junit.FixMethodOrder;
@@ -176,7 +175,7 @@ public class JcrTest {
     }
 
     @Test
-    public void removeQueryNodes() throws RepositoryException {
+    public void removeQueryResultNodes() throws RepositoryException {
         assumeTrue(jcr.hasNode("/customers"));
 
         final JcrResult createdInvoices = jcr.executeStoredQuery(VerifiedCustomerInvoices.class,
@@ -236,9 +235,8 @@ public class JcrTest {
             return new QueryBuilder.Strong<VerifiedCustomers>() {
 
                 @Override
-                protected QueryObjectModel buildQuery() throws RepositoryException {
-                    return createQuery(selector(CUSTOMER)).constraint(isTrue(propertyValue(VERIFIED.of(CUSTOMER))))
-                        .get();
+                protected CreateQuery supplyQuery() throws RepositoryException {
+                    return createQuery(selector(CUSTOMER)).constraint(isTrue(propertyValue(VERIFIED.of(CUSTOMER))));
                 }
             };
         }
@@ -248,13 +246,12 @@ public class JcrTest {
             return new QueryBuilder.Strong<CreatedInvoices>() {
 
                 @Override
-                protected QueryObjectModel buildQuery() throws RepositoryException {
+                protected CreateQuery supplyQuery() throws RepositoryException {
                     return createQuery(join(selector(CUSTOMER), selector(INVOICE), JCR_JOIN_TYPE_INNER,
                         childNodeJoinCondition(INVOICE, CUSTOMER)))
                             .constraint(comparison(propertyValue(STATUS.of(INVOICE)), JCR_OPERATOR_EQUAL_TO,
                                 literal(Jcr.enumValue(InvoiceStatus.CREATED))))
-                            .orderings(ascending(nodeName(CUSTOMER)), ascending(propertyValue(ORDER_DATE.of(INVOICE))))
-                            .get();
+                            .orderings(ascending(nodeName(CUSTOMER)), ascending(propertyValue(ORDER_DATE.of(INVOICE))));
                 }
             };
         }
@@ -264,15 +261,14 @@ public class JcrTest {
             return new QueryBuilder.Strong<VerifiedCustomerInvoices>() {
 
                 @Override
-                protected QueryObjectModel buildQuery() throws RepositoryException {
+                protected CreateQuery supplyQuery() throws RepositoryException {
                     return createQuery(join(selector(CUSTOMER), selector(INVOICE), JCR_JOIN_TYPE_INNER,
                         childNodeJoinCondition(INVOICE, CUSTOMER))).constraint(() -> {
                             final Constraint customerVerified = isTrue(propertyValue(VERIFIED.of(CUSTOMER)));
                             final Comparison status = comparison(propertyValue(STATUS.of(INVOICE)),
                                 JCR_OPERATOR_EQUAL_TO, bindVariable(VerifiedCustomerInvoices.INVOICE_STATUS));
                             return and(customerVerified, status);
-                        }).orderings(ascending(nodeName(CUSTOMER)), ascending(propertyValue(ORDER_DATE.of(INVOICE))))
-                            .get();
+                        }).orderings(ascending(nodeName(CUSTOMER)), ascending(propertyValue(ORDER_DATE.of(INVOICE))));
                 }
             };
         }
@@ -282,13 +278,12 @@ public class JcrTest {
             return new QueryBuilder.Strong<InvoicesByCustomer>() {
 
                 @Override
-                protected QueryObjectModel buildQuery() throws RepositoryException {
+                protected CreateQuery supplyQuery() throws RepositoryException {
                     return createQuery(join(selector(CUSTOMER), selector(INVOICE), JCR_JOIN_TYPE_INNER,
                         childNodeJoinCondition(INVOICE, CUSTOMER)))
                             .constraint(comparison(propertyValue(NAME.of(CUSTOMER)), JCR_OPERATOR_EQUAL_TO,
                                 bindVariable(InvoicesByCustomer.CUSTOMER_NAME)))
-                            .orderings(ascending(nodeName(CUSTOMER)), ascending(propertyValue(ORDER_DATE.of(INVOICE))))
-                            .get();
+                            .orderings(ascending(nodeName(CUSTOMER)), ascending(propertyValue(ORDER_DATE.of(INVOICE))));
                 }
             };
         }
@@ -298,13 +293,12 @@ public class JcrTest {
             return new QueryBuilder.Strong<CustomerWithInvoiceBefore>() {
 
                 @Override
-                protected QueryObjectModel buildQuery() throws RepositoryException {
+                protected CreateQuery supplyQuery() throws RepositoryException {
                     return createQuery(join(selector(CUSTOMER), selector(INVOICE), JCR_JOIN_TYPE_INNER,
                         childNodeJoinCondition(INVOICE, CUSTOMER)))
                             .constraint(comparison(propertyValue(ORDER_DATE.of(INVOICE)), JCR_OPERATOR_LESS_THAN,
                                 bindVariable(CustomerWithInvoiceBefore.ORDER_DATE)))
-                            .orderings(ascending(nodeName(CUSTOMER)), ascending(propertyValue(ORDER_DATE.of(INVOICE))))
-                            .get();
+                            .orderings(ascending(nodeName(CUSTOMER)), ascending(propertyValue(ORDER_DATE.of(INVOICE))));
                 }
             };
         }
