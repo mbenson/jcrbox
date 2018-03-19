@@ -131,7 +131,7 @@ public class Jcr {
      * @throws RepositoryException
      */
     public WithNode withRoot() throws RepositoryException {
-        return new WithNode(this);
+        return new WithNode(this, session.getRootNode());
     }
 
     /**
@@ -376,8 +376,8 @@ public class Jcr {
      * @throws RepositoryException
      */
     public QueryObjectModel query(QueryBuilder queryBuilder) throws RepositoryException {
-        return Objects.requireNonNull(queryBuilder)
-            .buildQuery(session.getWorkspace().getQueryManager().getQOMFactory(), this);
+        return Objects.requireNonNull(queryBuilder).buildQuery(session.getWorkspace().getQueryManager().getQOMFactory(),
+            this);
     }
 
     /**

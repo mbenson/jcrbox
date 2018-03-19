@@ -40,18 +40,8 @@ import jcrbox.fp.JcrSupplier;
  */
 public class WithNode {
 
-    private final Node target;
     private final Jcr jcr;
-
-    /**
-     * Work with root {@link Node}.
-     *
-     * @param jcr
-     * @throws RepositoryException
-     */
-    WithNode(Jcr jcr) throws RepositoryException {
-        this(jcr, jcr.session.getRootNode());
-    }
+    private final Node target;
 
     /**
      * Work with the specified {@link Node}.
@@ -253,7 +243,7 @@ public class WithNode {
      * @return {@code this}
      * @throws RepositoryException
      */
-    public WithNode setArray(String property, JcrFunction<ValueFactory, Value[]> values) throws RepositoryException {
+    public WithNode setMulti(String property, JcrFunction<ValueFactory, Value[]> values) throws RepositoryException {
         return invoke(
             node -> node.setProperty(property, Validate.notNull(values).jcrApply(jcr.session.getValueFactory())));
     }
@@ -266,9 +256,9 @@ public class WithNode {
      * @return {@code this}
      * @throws RepositoryException
      */
-    public WithNode setArray(JcrProperty<?> property, JcrFunction<ValueFactory, Value[]> values)
+    public WithNode setMulti(JcrProperty<?> property, JcrFunction<ValueFactory, Value[]> values)
         throws RepositoryException {
-        return setArray(property.propertyName(), values);
+        return setMulti(property.propertyName(), values);
     }
 
     /**
