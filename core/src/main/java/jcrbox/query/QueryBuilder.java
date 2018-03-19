@@ -90,7 +90,7 @@ public abstract class QueryBuilder implements QueryObjectModelFactory {
      */
     public static abstract class Strong<Q extends JcrQuery> extends QueryBuilder {
 
-        private static TypeVariable<?> QUERY_TYPE = Strong.class.getTypeParameters()[0];
+        private static final TypeVariable<?> QUERY_TYPE = Strong.class.getTypeParameters()[0];
 
         /**
          * The query type-modeling class, read from the type parameter of a subclass.
@@ -131,7 +131,19 @@ public abstract class QueryBuilder implements QueryObjectModelFactory {
          * @return {@code this}, fluently
          */
         public CreateQuery constraint(Constraint constraint) {
-            this.constraint = Objects.requireNonNull(constraint);
+            Objects.requireNonNull(constraint);
+            synchronized (this) {
+                if (this.constraint == null) {
+                    this.constraint = constraint;
+                } else {
+                    try {
+                        this.constraint = and(this.constraint, constraint);
+                    } catch (RepositoryException e) {
+                        throw new RuntimeException("Exception encountered attempting to AND JCR query constraints", e);
+                    }
+                }
+            }
+            this.constraint = constraint;
             return this;
         }
 
@@ -205,8 +217,8 @@ public abstract class QueryBuilder implements QueryObjectModelFactory {
         }
     }
 
-    private volatile QueryObjectModelFactory delegate;
     private Jcr jcr;
+    private volatile QueryObjectModelFactory delegate;
 
     /**
      * Template method for a {@link QueryBuilder} subclass. The default implementation calls {@link #supplyQuery()}
@@ -247,11 +259,12 @@ public abstract class QueryBuilder implements QueryObjectModelFactory {
         Validate.notNull(jcr, "jcr");
 
         synchronized (this) {
-            this.delegate = delegate;
             this.jcr = jcr;
+            this.delegate = delegate;
             try {
                 return buildQuery();
             } finally {
+                this.jcr = null;
                 this.delegate = null;
             }
         }
