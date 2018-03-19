@@ -1,3 +1,18 @@
+/*
+ *  Copyright the original author or authors.
+ *
+ *  Licensed under the Apache License, Version 2.0 (the "License");
+ *  you may not use this file except in compliance with the License.
+ *  You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ *  Unless required by applicable law or agreed to in writing, software
+ *  distributed under the License is distributed on an "AS IS" BASIS,
+ *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *  See the License for the specific language governing permissions and
+ *  limitations under the License.
+ */
 package jcrbox.springboot;
 
 import java.util.Arrays;
@@ -13,6 +28,7 @@ import javax.jcr.RepositoryFactory;
 import javax.jcr.Session;
 
 import org.apache.commons.lang3.StringUtils;
+import org.modeshape.jcr.ModeShape;
 import org.modeshape.jcr.ModeShapeEngine;
 import org.modeshape.jcr.RepositoryConfiguration;
 import org.modeshape.schematic.DocumentFactory;
@@ -28,10 +44,16 @@ import jcrbox.Jcr;
 import jcrbox.fp.JcrConsumer;
 import jcrbox.query.QueryBuilder;
 
+/**
+ * Spring Boot auto-configuration for jcrbox.
+ */
 @Configuration
 @EnableConfigurationProperties(JcrProperties.class)
 public class JcrConfiguration {
 
+    /**
+     * {@link ModeShape} configuration.
+     */
     @Configuration
     @ConditionalOnClass(ModeShapeEngine.class)
     @EnableConfigurationProperties(JcrProperties.class)
@@ -43,6 +65,11 @@ public class JcrConfiguration {
 
         private ModeShapeEngine modeShapeEngine;
 
+        /**
+         * Bean factory method for the {@link ModeShapeEngine}.
+         *
+         * @return {@link ModeShapeEngine}
+         */
         @Bean
         public ModeShapeEngine modeShapeEngine() {
             modeShapeEngine = new ModeShapeEngine();
@@ -50,6 +77,11 @@ public class JcrConfiguration {
             return modeShapeEngine;
         }
 
+        /**
+         * Bean factory method for the ModeShape {@link RepositoryConfiguration}.
+         *
+         * @return {@link RepositoryConfiguration}
+         */
         @Bean
         public RepositoryConfiguration repositoryConfiguration() {
             final EditableDocument document = DocumentFactory.newDocument();
@@ -70,17 +102,34 @@ public class JcrConfiguration {
             return parent;
         }
 
+        /**
+         * Bean factory method for the {@link ModeShape} JCR {@link Repository}.
+         *
+         * @return {@link Repository}
+         * @throws RepositoryException
+         */
         @Bean
         public Repository repository() throws RepositoryException {
             return modeShapeEngine().deploy(repositoryConfiguration());
         }
 
+        /**
+         * Shutdown method for {@link ModeShape}.
+         */
         @PreDestroy
         public void shutdown() {
             Optional.ofNullable(modeShapeEngine).ifPresent(ModeShapeEngine::shutdown);
         }
     }
 
+    /**
+     * Fallback bean factory method for a JCR {@link Repository} using a {@link RepositoryFactory}
+     * {@link ServiceLoader}.
+     *
+     * @param jcrProperties
+     * @return {@link Repository}
+     * @throws RepositoryException
+     */
     @Bean
     @ConditionalOnMissingBean(Repository.class)
     public Repository repository(JcrProperties jcrProperties) throws RepositoryException {
@@ -93,11 +142,26 @@ public class JcrConfiguration {
         return null;
     }
 
+    /**
+     * Bean factory method for a JCR {@link Session}.
+     * 
+     * @param repository
+     * @return {@link Session}
+     * @throws RepositoryException
+     */
     @Bean(destroyMethod = "logout")
     public Session jcrSession(Repository repository) throws RepositoryException {
         return repository.login();
     }
 
+    /**
+     * Bean factory method for a {@link Jcr} instance over {@link #jcrSession(Repository)}.
+     * 
+     * @param session
+     * @param jcrConfigurers
+     * @param queryBuilders
+     * @return {@link Jcr}
+     */
     @Bean
     public Jcr jcr(Session session, Optional<List<JcrConsumer<Jcr>>> jcrConfigurers,
         Optional<List<QueryBuilder.Strong<?>>> queryBuilders) {
