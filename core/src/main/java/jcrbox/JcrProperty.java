@@ -336,17 +336,28 @@ public interface JcrProperty<P extends Enum<P> & JcrProperty<P>> {
      * @see JcrNamespace.Helper#getNamespace(Class)
      */
     default String namespace() {
-        return JcrNamespace.Helper.getNamespace(asEnum().getDeclaringClass());
+        return JcrNamespace.Helper.getNamespace(getClass());
     }
 
     /**
-     * Get the name of the modeled property.
+     * Get the basename of the modeled property.
+     * 
+     * @return {@link String}
+     * @see EnumHelper#basename(Enum)
+     */
+    default String basename() {
+        return EnumHelper.basename(asEnum());
+    }
+
+    /**
+     * Get the fully-qualified name of the modeled property.
      *
      * @return {@link String}
-     * @see EnumHelper#renderName(Enum)
+     * @see #basename()
+     * @see JcrNamespace.Helper#format(Class, String)
      */
     default String propertyName() {
-        return EnumHelper.renderName(asEnum());
+        return JcrNamespace.Helper.format(getClass(), basename());
     }
 
     /**

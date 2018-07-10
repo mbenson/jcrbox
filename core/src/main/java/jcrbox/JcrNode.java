@@ -28,7 +28,9 @@ import java.util.stream.Stream;
 import javax.jcr.Node;
 import javax.jcr.RepositoryException;
 import javax.jcr.nodetype.ConstraintViolationException;
+import javax.jcr.nodetype.NodeDefinitionTemplate;
 import javax.jcr.nodetype.NodeTypeTemplate;
+import javax.jcr.version.OnParentVersionAction;
 
 import org.apache.commons.lang3.ArrayUtils;
 
@@ -43,7 +45,7 @@ import jcrbox.fp.JcrConsumer;
 public interface JcrNode<N extends Enum<N> & JcrNode<N>> {
 
     /**
-     * Interface to define a JCR node type.
+     * Annotation to define a top-level JCR node type.
      */
     @Documented
     @Retention(RetentionPolicy.RUNTIME)
@@ -53,7 +55,7 @@ public interface JcrNode<N extends Enum<N> & JcrNode<N>> {
         /**
          * Whether the node type is abstract.
          *
-         * @return {@code boolean}
+         * @return {@code boolean}, default {@code false}
          */
         boolean isAbstract() default false;
 
@@ -67,19 +69,19 @@ public interface JcrNode<N extends Enum<N> & JcrNode<N>> {
         /**
          * Whether the node is a mixin type.
          *
-         * @return {@code boolean}
+         * @return {@code boolean}, default {@code false}
          */
         boolean mixin() default false;
 
         /**
          * Whether the node type has orderable child nodes.
          *
-         * @return
+         * @return {@code boolean}, default {@code false}
          */
         boolean orderableChildNodes() default false;
 
         /**
-         * The primary name of the node type.
+         * The primary item name of the node type.
          *
          * @return {@link String}
          */
@@ -94,8 +96,70 @@ public interface JcrNode<N extends Enum<N> & JcrNode<N>> {
     }
 
     /**
+     * Annotation to define a JCR child node type.
+     */
+    @Documented
+    @Retention(RetentionPolicy.RUNTIME)
+    @Target(ElementType.FIELD)
+    public @interface ChildNodeDefinition {
+        /**
+         * Whether a child node of this definition is automatically created.
+         *
+         * @return {@code boolean}, default {@code false}
+         */
+        boolean autoCreated() default false;
+
+        /**
+         * Whether a child node of this definition is mandatory.
+         *
+         * @return {@code boolean}, default {@code false}
+         */
+        boolean mandatory() default false;
+
+        /**
+         * The on parent version action of a child node of this definition.
+         *
+         * @return {@code int}, default ignored
+         * @see OnParentVersionAction
+         */
+        int onParentVersion() default Integer.MIN_VALUE;
+
+        /**
+         * Whether the child node definition is protected.
+         *
+         * @return {@code boolean}, default {@code false}
+         */
+        boolean isProtected() default false;
+
+        /**
+         * Required primary types of a child node of this definition.
+         * 
+         * @return {@link String}[], default {@code {}}
+         */
+        String[] requiredPrimaryTypeNames() default {};
+
+        /**
+         * Default primary type of a child node of this definition.
+         * 
+         * @return {@link String}, default {@code ""}
+         */
+        String defaultPrimaryTypeName() default "";
+
+        /**
+         * Whether same name sibling nodes of this definition are allowed.
+         * 
+         * @return {@code boolean}, default {@code false}
+         */
+        boolean sameNameSiblings() default false;
+    }
+
+    /**
      * Configure a {@link NodeTypeTemplate} from this enum constant, using, if available, the settings declared by its
      * {@link NodeDefinition}.
+     * 
+     * @param ntt
+     * @return {@code ntt}
+     * @throws ConstraintViolationException
      */
     default NodeTypeTemplate configure(NodeTypeTemplate ntt) throws ConstraintViolationException {
         ntt.setName(nodeName());
@@ -113,6 +177,31 @@ public interface JcrNode<N extends Enum<N> & JcrNode<N>> {
     }
 
     /**
+     * Configure a {@link NodeDefinitionTemplate} from this enum constant, using, if available, the settings declared by
+     * its {@link ChildNodeDefinition}.
+     * 
+     * @param ndt
+     * @return @{code ndt}
+     * @throws ConstraintViolationException
+     */
+    default NodeDefinitionTemplate configure(NodeDefinitionTemplate ndt) throws ConstraintViolationException {
+        ndt.setName(nodeName());
+        Optional.ofNullable(EnumHelper.getAnnotation(asEnum(), ChildNodeDefinition.class))
+            .ifPresent((JcrConsumer<ChildNodeDefinition>) def -> {
+                ndt.setAutoCreated(def.autoCreated());
+                ndt.setMandatory(def.mandatory());
+                if (def.onParentVersion() >= 0) {
+                    ndt.setOnParentVersion(def.onParentVersion());
+                }
+                ndt.setProtected(def.isProtected());
+                ndt.setRequiredPrimaryTypeNames(def.requiredPrimaryTypeNames());
+                ndt.setDefaultPrimaryTypeName(def.defaultPrimaryTypeName());
+                ndt.setSameNameSiblings(def.sameNameSiblings());
+            });
+        return ndt;
+    }
+
+    /**
      * Get the JCR namespace of the modeled node type.
      *
      * @return {@link String}
@@ -123,13 +212,24 @@ public interface JcrNode<N extends Enum<N> & JcrNode<N>> {
     }
 
     /**
-     * Get the name of the modeled node type.
+     * Get the basename of the modeled node type.
+     * 
+     * @return {@link String}
+     * @see EnumHelper#basename(Enum)
+     */
+    default String basename() {
+        return EnumHelper.basename(asEnum());
+    }
+
+    /**
+     * Get the fully-qualified name of the modeled node type.
      *
      * @return {@link String}
-     * @see EnumHelper#renderName(Enum)
+     * @see #basename()
+     * @see JcrNamespace.Helper#format(Class, String)
      */
     default String nodeName() {
-        return EnumHelper.renderName(asEnum());
+        return JcrNamespace.Helper.format(getClass(), basename());
     }
 
     /**
