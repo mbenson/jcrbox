@@ -31,14 +31,23 @@ import org.apache.commons.text.WordUtils;
 public class EnumHelper {
 
     /**
+     * Transform an underscore-delimited {@link String} to camel case, tokenizing on the underscores.
+     * @param s
+     * @return camel case {@link String}, {@code null} if {@code s} is {@code null}
+     */
+    public static String underscoreDelimmitedToCamelCase(String s) {
+        return s == null ? null :WordUtils
+                .uncapitalize(Stream.of(s.split("_")).map(WordUtils::capitalizeFully).collect(Collectors.joining()));
+    }
+
+    /**
      * Transform an enum name from the expected underscore-delimited caps to camel case.
      * 
      * @param e
      * @return {@link String}
      */
     public static <E extends Enum<E>> String basename(E e) {
-        return WordUtils
-                .uncapitalize(Stream.of(e.name().split("_")).map(WordUtils::capitalizeFully).collect(Collectors.joining()));
+        return underscoreDelimmitedToCamelCase(e.name());
     }
 
     /**
