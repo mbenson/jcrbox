@@ -28,6 +28,7 @@ import javax.jcr.RepositoryException;
 import javax.jcr.Value;
 import javax.jcr.ValueFactory;
 
+import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.Validate;
 
 import jcrbox.fp.JcrConsumer;
@@ -102,6 +103,16 @@ public class WithNode {
      */
     public WithNode next(String name, JcrNode<?> type) {
         return next(name, type.nodeName());
+    }
+
+    /**
+     * Find or create the child node described by {@code child}.
+     * 
+     * @param child
+     * @return {@link WithNode}
+     */
+    public WithNode next(JcrNode<?> child) {
+        return next(child.nodeName());
     }
 
     /**
@@ -259,6 +270,34 @@ public class WithNode {
     public WithNode setMulti(JcrProperty<?> property, JcrFunction<ValueFactory, Value[]> values)
         throws RepositoryException {
         return setMulti(property.propertyName(), values);
+    }
+
+    /**
+     * Add a {@link Value} to a multi-valued property.
+     * 
+     * @param property
+     * @param value
+     * @return {@code this}
+     * @throws RepositoryException
+     */
+    public WithNode addTo(String property, JcrFunction<ValueFactory, Value> value) throws RepositoryException {
+        final Value[] v = target.hasProperty(property) ? target.getProperty(property).getValues() : null;
+        return setMulti(property, vf -> {
+            final Value element = value.apply(vf);
+            return element == null && v == null ? null : ArrayUtils.add(v, element);
+        });
+    }
+
+    /**
+     * Add a {@link Value} to a multi-valued property.
+     * 
+     * @param property
+     * @param value
+     * @return {@code this}
+     * @throws RepositoryException
+     */
+    public WithNode addTo(JcrProperty<?> property, JcrFunction<ValueFactory, Value> value) throws RepositoryException {
+        return addTo(property.propertyName(), value);
     }
 
     /**
