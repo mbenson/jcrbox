@@ -32,6 +32,7 @@ import javax.jcr.RepositoryException;
 import javax.jcr.Value;
 import javax.jcr.ValueFactory;
 import javax.jcr.query.InvalidQueryException;
+import javax.jcr.query.Query;
 import javax.jcr.query.qom.And;
 import javax.jcr.query.qom.BindVariableValue;
 import javax.jcr.query.qom.ChildNode;
@@ -217,27 +218,31 @@ public abstract class QueryBuilder implements QueryObjectModelFactory {
         }
     }
 
-    private Jcr jcr;
+    /**
+     * The associated {@link Jcr} instance.
+     */
+    protected Jcr jcr;
+
     private volatile QueryObjectModelFactory delegate;
 
     /**
      * Template method for a {@link QueryBuilder} subclass. The default implementation calls {@link #supplyQuery()}
      *
-     * @return {@link javax.jcr.query.qom.QueryObjectModel}
+     * @return {@link Query}
      * @throws RepositoryException
      * @throws InvalidQueryException
      */
-    protected QueryObjectModel buildQuery() throws RepositoryException {
+    protected Query buildQuery() throws RepositoryException {
         return supplyQuery().get();
     }
 
     /**
      * Template method for a {@link QueryBuilder} subclass that wants to use {@link CreateQuery}.
      *
-     * @return {@link Supplier} of {@link QueryObjectModel}
+     * @return {@link Supplier} of {@link Query}
      * @throws RepositoryException
      */
-    protected Supplier<? extends QueryObjectModel> supplyQuery() throws RepositoryException {
+    protected Supplier<? extends Query> supplyQuery() throws RepositoryException {
         throw new UnsupportedOperationException();
     }
 
@@ -248,11 +253,11 @@ public abstract class QueryBuilder implements QueryObjectModelFactory {
      *            {@link QueryObjectModelFactory} delegate
      * @param jcr
      *            invoker
-     * @return {@link javax.jcr.query.qom.QueryObjectModel}
+     * @return {@link Query}
      * @throws RepositoryException
      * @throws InvalidQueryException
      */
-    public final synchronized QueryObjectModel buildQuery(QueryObjectModelFactory delegate, Jcr jcr)
+    public final synchronized Query buildQuery(QueryObjectModelFactory delegate, Jcr jcr)
         throws RepositoryException {
         Validate.validState(this.delegate == null, "Re-entry not permitted");
         Validate.notNull(delegate, "delegate");
@@ -1059,5 +1064,14 @@ public abstract class QueryBuilder implements QueryObjectModelFactory {
      */
     public final Column column(QualifedProperty<?, ?> qualifedProperty, String column) throws RepositoryException {
         return column(qualifedProperty.node.selectorName(), qualifedProperty.property.propertyName(), column);
+    }
+
+    /**
+     * Get the raw delegate currently in use.
+     * @param <D> inferred/expected type
+     */
+    @SuppressWarnings("unchecked")
+    protected <D extends QueryObjectModelFactory> D rawDelegate() {
+        return (D) delegate;
     }
 }
