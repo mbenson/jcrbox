@@ -20,8 +20,10 @@ import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
+import java.util.Collections;
 import java.util.Locale;
 import java.util.Optional;
+import java.util.Set;
 import java.util.function.Predicate;
 import java.util.stream.Stream;
 
@@ -29,10 +31,12 @@ import javax.jcr.Node;
 import javax.jcr.RepositoryException;
 import javax.jcr.nodetype.ConstraintViolationException;
 import javax.jcr.nodetype.NodeDefinitionTemplate;
+import javax.jcr.nodetype.NodeType;
 import javax.jcr.nodetype.NodeTypeTemplate;
 import javax.jcr.version.OnParentVersionAction;
 
 import org.apache.commons.lang3.ArrayUtils;
+import org.apache.commons.lang3.mutable.MutableObject;
 
 import jcrbox.fp.JcrConsumer;
 
@@ -141,9 +145,9 @@ public interface JcrNode<N extends Enum<N> & JcrNode<N>> {
         /**
          * Default primary type of a child node of this definition.
          * 
-         * @return {@link String}, default {@code ""}
+         * @return {@link String}, default {@link NodeType#NT_UNSTRUCTURED}
          */
-        String defaultPrimaryTypeName() default "";
+        String defaultPrimaryTypeName() default NodeType.NT_UNSTRUCTURED;
 
         /**
          * Whether same name sibling nodes of this definition are allowed.
@@ -163,17 +167,35 @@ public interface JcrNode<N extends Enum<N> & JcrNode<N>> {
      */
     default NodeTypeTemplate configure(NodeTypeTemplate ntt) throws ConstraintViolationException {
         ntt.setName(nodeName());
+        final MutableObject<String[]> annotatedSupertypes = new MutableObject<>(ArrayUtils.EMPTY_STRING_ARRAY);
         Optional.ofNullable(EnumHelper.getAnnotation(asEnum(), NodeDefinition.class))
             .ifPresent((JcrConsumer<NodeDefinition>) def -> {
                 ntt.setAbstract(def.isAbstract());
-                Optional.of(def.supertypes()).filter(ArrayUtils::isNotEmpty)
-                    .ifPresent((JcrConsumer<String[]>) ntt::setDeclaredSuperTypeNames);
+                annotatedSupertypes.setValue(def.supertypes());
                 ntt.setMixin(def.mixin());
                 ntt.setOrderableChildNodes(def.orderableChildNodes());
                 ntt.setPrimaryItemName(def.primaryItemName());
                 ntt.setQueryable(def.queryable());
             });
+
+        final String[] supertypes =
+            Stream.concat(Stream.of(annotatedSupertypes.getValue()), getSupertypes().stream().map(JcrNode::nodeName))
+                .distinct().toArray(String[]::new);
+
+        if (supertypes.length > 0) {
+            ntt.setDeclaredSuperTypeNames(supertypes);
+        }
         return ntt;
+    }
+
+    /**
+     * Return the set of {@link JcrNode} types that make up supertypes of the modeled (top-level) node type. This method
+     * can be overridden by individual {@link JcrNode} instances.
+     * 
+     * @return empty {@link Set}
+     */
+    default Set<? extends JcrNode<?>> getSupertypes() {
+        return Collections.emptySet();
     }
 
     /**
@@ -271,7 +293,7 @@ public interface JcrNode<N extends Enum<N> & JcrNode<N>> {
      * @throws RepositoryException
      */
     default boolean isPrimaryNodeTypeOf(Node node) throws RepositoryException {
-        return node.getPrimaryNodeType().isNodeType(nodeName());
+        return isAssignableFrom(node.getPrimaryNodeType());
     }
 
     /**
@@ -280,8 +302,21 @@ public interface JcrNode<N extends Enum<N> & JcrNode<N>> {
      * @param node
      * @return {@code boolean}
      * @throws RepositoryException
+     * @see {@link Node#isNodeType(String)}
      */
     default boolean isTypeOf(Node node) throws RepositoryException {
         return node.isNodeType(nodeName());
+    }
+
+    /**
+     * Learn whether the node type modeled by this enum is assignable from the specified {@link NodeType}.
+     * 
+     * @param nodeType
+     * @return {@code boolean}
+     * @throws RepositoryException
+     * @see {@link NodeType#isNodeType(String)}
+     */
+    default boolean isAssignableFrom(NodeType nodeType) throws RepositoryException {
+        return nodeType.isNodeType(nodeName());
     }
 }
