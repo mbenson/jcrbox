@@ -32,7 +32,6 @@ import javax.jcr.nodetype.NodeTypeManager;
 import javax.jcr.nodetype.NodeTypeTemplate;
 import javax.jcr.query.InvalidQueryException;
 import javax.jcr.query.Query;
-import javax.jcr.query.qom.QueryObjectModel;
 
 import org.apache.commons.lang3.Validate;
 
@@ -63,6 +62,8 @@ public class Jcr {
      */
     public final Session session;
 
+    private boolean allowMetaUpdates;
+
     /**
      * Create a new {@link Jcr} for working with the specified {@link Session}.
      *
@@ -70,6 +71,17 @@ public class Jcr {
      */
     public Jcr(Session session) {
         this.session = Validate.notNull(session);
+    }
+
+    /**
+     * Set whether updates to JCR workspace metadata (i.e. {@link NodeType} definitions) are permitted.
+     * 
+     * @param allowMetaUpdates
+     * @return {@code this}, fluently
+     */
+    public Jcr allowMetaUpdates(boolean allowMetaUpdates) {
+        this.allowMetaUpdates = allowMetaUpdates;
+        return this;
     }
 
     /**
@@ -147,12 +159,12 @@ public class Jcr {
         throws RepositoryException {
         final NodeTypeManager mgr = session.getWorkspace().getNodeTypeManager();
         final String name = node.nodeName();
-        if (mgr.hasNodeType(name)) {
+        if (mgr.hasNodeType(name) && !allowMetaUpdates) {
             return mgr.getNodeType(name);
         }
         final NodeTypeTemplate nodeTypeTemplate = definer.apply(mgr);
         nodeTypeTemplate.setName(name);
-        return mgr.registerNodeType(nodeTypeTemplate, false);
+        return mgr.registerNodeType(nodeTypeTemplate, allowMetaUpdates);
     }
 
     /**
@@ -168,13 +180,13 @@ public class Jcr {
         throws RepositoryException {
         final NodeTypeManager mgr = session.getWorkspace().getNodeTypeManager();
         final String name = node.nodeName();
-        if (mgr.hasNodeType(name)) {
+        if (mgr.hasNodeType(name) && !allowMetaUpdates) {
             return mgr.getNodeType(name);
         }
         final NodeTypeTemplate nodeTypeTemplate = mgr.createNodeTypeTemplate();
         node.configure(nodeTypeTemplate);
         definer.accept(nodeTypeTemplate);
-        return mgr.registerNodeType(nodeTypeTemplate, false);
+        return mgr.registerNodeType(nodeTypeTemplate, allowMetaUpdates);
     }
 
     /**
@@ -217,7 +229,8 @@ public class Jcr {
         throws RepositoryException {
         final NodeDefinitionTemplate nodeDefinitionTemplate =
             session.getWorkspace().getNodeTypeManager().createNodeDefinitionTemplate();
-        nodeDefinitionTemplate.setRequiredPrimaryTypeNames(new String[] { childNode.nodeName() });
+        childNode.configure(nodeDefinitionTemplate);
+        config.accept(nodeDefinitionTemplate);
         return node.getNodeDefinitionTemplates().add(nodeDefinitionTemplate);
     }
 
@@ -372,10 +385,10 @@ public class Jcr {
      * Use a {@link QueryBuilder} to build a {@link Query}.
      *
      * @param queryBuilder
-     * @return {@link QueryObjectModel}
+     * @return {@link Query}
      * @throws RepositoryException
      */
-    public QueryObjectModel query(QueryBuilder queryBuilder) throws RepositoryException {
+    public Query query(QueryBuilder queryBuilder) throws RepositoryException {
         return Objects.requireNonNull(queryBuilder).buildQuery(session.getWorkspace().getQueryManager().getQOMFactory(),
             this);
     }
@@ -573,7 +586,7 @@ public class Jcr {
      */
     public Node findOrCreateNode(Node parentNode, String path, JcrNode<?> defaultNodeType, JcrNode<?> finalNodeType)
         throws RepositoryException {
-        return findOrCreateNode(parentNode, path, defaultNodeType.nodeName(), finalNodeType.nodeName());
+        return findOrCreateNode(parentNode, path, nameOf(defaultNodeType), nameOf(finalNodeType));
     }
 
     /**
@@ -635,7 +648,7 @@ public class Jcr {
      */
     public Node findOrCreateNode(Node parentNode, Path path, JcrNode<?> defaultNodeType, JcrNode<?> finalNodeType)
         throws RepositoryException {
-        return findOrCreateNode(parentNode, path, defaultNodeType.nodeName(), finalNodeType.nodeName());
+        return findOrCreateNode(parentNode, path, nameOf(defaultNodeType), nameOf(finalNodeType));
     }
 
     /**
@@ -657,5 +670,9 @@ public class Jcr {
      */
     public Path path(String path) throws RepositoryException {
         return Path.parse(session.getWorkspace().getNamespaceRegistry(), path);
+    }
+    
+    private String nameOf(JcrNode<?> nodeType) {
+        return nodeType == null ? null : nodeType.nodeName();
     }
 }
