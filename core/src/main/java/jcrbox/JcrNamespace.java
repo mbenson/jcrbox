@@ -35,22 +35,23 @@ import org.apache.commons.lang3.StringUtils;
 public @interface JcrNamespace {
 
     /**
-     * Helper class for the {@link JcrNamespace} annotation. Intended for internal use; {@code public} only for the sake
-     * of inter-package visibility.
+     * Jcr namespace helper class.
      */
     public static class Helper {
 
         private static final Map<Class<?>, String> MAP = new HashMap<>();
 
         /**
-         * Get the namespace of a given type, either declared with {@link JcrNamespace} or {@code ""}.
+         * Get the namespace of a given type, either from the first encountered {@link JcrNamespace} traversing out from
+         * a nested class structure or {@code ""}.
          *
          * @param namespacedType
          * @return {@link String}
          */
         public static String getNamespace(Class<?> namespacedType) {
-            return MAP.computeIfAbsent(namespacedType, e -> Optional.ofNullable(e.getAnnotation(JcrNamespace.class))
-                .map(JcrNamespace::value).map(String::trim).orElse(""));
+            return MAP.computeIfAbsent(namespacedType, e -> {
+                return findAnnotation(namespacedType).map(JcrNamespace::value).map(String::trim).orElse("");
+            });
         }
 
         /**
@@ -63,6 +64,17 @@ public @interface JcrNamespace {
         public static String format(Class<?> namespacedType, String basename) {
             final String ns = getNamespace(namespacedType);
             return StringUtils.isBlank(ns) ? basename : String.format("{%s}%s", ns, basename);
+        }
+
+        private static Optional<JcrNamespace> findAnnotation(Class<?> namespacedType) {
+            Class<?> t = namespacedType;
+            while (t != null) {
+                if (t.isAnnotationPresent(JcrNamespace.class)) {
+                    return Optional.of(t.getAnnotation(JcrNamespace.class));
+                }
+                t = t.getEnclosingClass();
+            }
+            return Optional.empty();
         }
 
         private Helper() {
