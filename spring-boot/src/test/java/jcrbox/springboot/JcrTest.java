@@ -256,12 +256,10 @@ public class JcrTest {
                 @Override
                 protected CreateQuery supplyQuery() throws RepositoryException {
                     return createQuery(join(selector(CUSTOMER), selector(INVOICE), JCR_JOIN_TYPE_INNER,
-                        equiJoinCondition(CUSTOMER.selectorName(), INVOICE_REF.fullname(), INVOICE.selectorName(),
-                            Property.JCR_UUID)))
-                                .constraint(comparison(propertyValue(STATUS.of(INVOICE)), JCR_OPERATOR_EQUAL_TO,
-                                    literal(Jcr.enumValue(InvoiceStatus.CREATED))))
-                                .orderings(ascending(nodeName(CUSTOMER)),
-                                    ascending(propertyValue(ORDER_DATE.of(INVOICE))));
+                        joinByReference(INVOICE_REF.of(CUSTOMER), INVOICE)))
+                            .constraint(comparison(propertyValue(STATUS.of(INVOICE)), JCR_OPERATOR_EQUAL_TO,
+                                literal(Jcr.enumValue(InvoiceStatus.CREATED))))
+                            .orderings(ascending(nodeName(CUSTOMER)), ascending(propertyValue(ORDER_DATE.of(INVOICE))));
                 }
             };
         }
@@ -273,14 +271,12 @@ public class JcrTest {
                 @Override
                 protected CreateQuery supplyQuery() throws RepositoryException {
                     return createQuery(join(selector(CUSTOMER), selector(INVOICE), JCR_JOIN_TYPE_INNER,
-                        equiJoinCondition(CUSTOMER.selectorName(), INVOICE_REF.fullname(), INVOICE.selectorName(),
-                            Property.JCR_UUID))).constraint(() -> {
-                                final Constraint customerVerified = isTrue(propertyValue(VERIFIED.of(CUSTOMER)));
-                                final Comparison status = comparison(propertyValue(STATUS.of(INVOICE)),
-                                    JCR_OPERATOR_EQUAL_TO, bindVariable(VerifiedCustomerInvoices.INVOICE_STATUS));
-                                return and(customerVerified, status);
-                            }).orderings(ascending(nodeName(CUSTOMER)),
-                                ascending(propertyValue(ORDER_DATE.of(INVOICE))));
+                        joinByReference(INVOICE_REF.of(CUSTOMER), INVOICE))).constraint(() -> {
+                            final Constraint customerVerified = isTrue(propertyValue(VERIFIED.of(CUSTOMER)));
+                            final Comparison status = comparison(propertyValue(STATUS.of(INVOICE)),
+                                JCR_OPERATOR_EQUAL_TO, bindVariable(VerifiedCustomerInvoices.INVOICE_STATUS));
+                            return and(customerVerified, status);
+                        }).orderings(ascending(nodeName(CUSTOMER)), ascending(propertyValue(ORDER_DATE.of(INVOICE))));
                 }
             };
         }
@@ -292,12 +288,10 @@ public class JcrTest {
                 @Override
                 protected CreateQuery supplyQuery() throws RepositoryException {
                     return createQuery(join(selector(CUSTOMER), selector(INVOICE), JCR_JOIN_TYPE_INNER,
-                        equiJoinCondition(CUSTOMER.selectorName(), INVOICE_REF.fullname(), INVOICE.selectorName(),
-                            Property.JCR_UUID)))
-                                .constraint(comparison(propertyValue(NAME.of(CUSTOMER)), JCR_OPERATOR_EQUAL_TO,
-                                    bindVariable(InvoicesByCustomer.CUSTOMER_NAME)))
-                                .orderings(ascending(nodeName(CUSTOMER)),
-                                    ascending(propertyValue(ORDER_DATE.of(INVOICE))));
+                        joinByReference(INVOICE_REF.of(CUSTOMER), INVOICE)))
+                            .constraint(comparison(propertyValue(NAME.of(CUSTOMER)), JCR_OPERATOR_EQUAL_TO,
+                                bindVariable(InvoicesByCustomer.CUSTOMER_NAME)))
+                            .orderings(ascending(nodeName(CUSTOMER)), ascending(propertyValue(ORDER_DATE.of(INVOICE))));
                 }
             };
         }
@@ -309,12 +303,10 @@ public class JcrTest {
                 @Override
                 protected CreateQuery supplyQuery() throws RepositoryException {
                     return createQuery(join(selector(CUSTOMER), selector(INVOICE), JCR_JOIN_TYPE_INNER,
-                        equiJoinCondition(CUSTOMER.selectorName(), INVOICE_REF.fullname(), INVOICE.selectorName(),
-                            Property.JCR_UUID)))
-                                .constraint(comparison(propertyValue(ORDER_DATE.of(INVOICE)), JCR_OPERATOR_LESS_THAN,
-                                    bindVariable(CustomerWithInvoiceBefore.ORDER_DATE)))
-                                .orderings(ascending(nodeName(CUSTOMER)),
-                                    ascending(propertyValue(ORDER_DATE.of(INVOICE))));
+                        joinByReference(INVOICE_REF.of(CUSTOMER), INVOICE)))
+                            .constraint(comparison(propertyValue(ORDER_DATE.of(INVOICE)), JCR_OPERATOR_LESS_THAN,
+                                bindVariable(CustomerWithInvoiceBefore.ORDER_DATE)))
+                            .orderings(ascending(nodeName(CUSTOMER)), ascending(propertyValue(ORDER_DATE.of(INVOICE))));
                 }
             };
         }

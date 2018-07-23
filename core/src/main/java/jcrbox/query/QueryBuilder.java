@@ -28,6 +28,7 @@ import java.util.Set;
 import java.util.function.IntFunction;
 import java.util.function.Supplier;
 
+import javax.jcr.Property;
 import javax.jcr.RepositoryException;
 import javax.jcr.Value;
 import javax.jcr.ValueFactory;
@@ -257,8 +258,7 @@ public abstract class QueryBuilder implements QueryObjectModelFactory {
      * @throws RepositoryException
      * @throws InvalidQueryException
      */
-    public final synchronized Query buildQuery(QueryObjectModelFactory delegate, Jcr jcr)
-        throws RepositoryException {
+    public final synchronized Query buildQuery(QueryObjectModelFactory delegate, Jcr jcr) throws RepositoryException {
         Validate.validState(this.delegate == null, "Re-entry not permitted");
         Validate.notNull(delegate, "delegate");
         Validate.notNull(jcr, "jcr");
@@ -412,6 +412,19 @@ public abstract class QueryBuilder implements QueryObjectModelFactory {
         throws RepositoryException {
         return equiJoinCondition(quid.node.selectorName(), quid.property.fullname(), quo.node.selectorName(),
             quo.property.fullname());
+    }
+
+    /**
+     * Convenience method to join two nodes by one's reference property.
+     * 
+     * @param ref
+     * @param node
+     * @return {@link JoinCondition}
+     * @throws RepositoryException
+     */
+    public JoinCondition joinByReference(QualifedProperty<?, ?> ref, JcrNode<?> node) throws RepositoryException {
+        return equiJoinCondition(ref.node.selectorName(), ref.property.fullname(), node.selectorName(),
+            Property.JCR_UUID);
     }
 
     /**
@@ -1068,7 +1081,9 @@ public abstract class QueryBuilder implements QueryObjectModelFactory {
 
     /**
      * Get the raw delegate currently in use.
-     * @param <D> inferred/expected type
+     * 
+     * @param <D>
+     *            inferred/expected type
      */
     @SuppressWarnings("unchecked")
     protected <D extends QueryObjectModelFactory> D rawDelegate() {
