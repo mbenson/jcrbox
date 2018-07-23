@@ -348,7 +348,7 @@ public abstract class QueryBuilder implements QueryObjectModelFactory {
      * @throws RepositoryException
      */
     public final Selector selector(JcrNode<?> node) throws RepositoryException {
-        return selector(node.nodeName(), node.selectorName());
+        return selector(node.fullname(), node.selectorName());
     }
 
     /**
@@ -410,8 +410,8 @@ public abstract class QueryBuilder implements QueryObjectModelFactory {
      */
     public EquiJoinCondition equiJoinCondition(QualifedProperty<?, ?> quid, QualifedProperty<?, ?> quo)
         throws RepositoryException {
-        return equiJoinCondition(quid.node.selectorName(), quid.property.propertyName(), quo.node.selectorName(),
-            quo.property.propertyName());
+        return equiJoinCondition(quid.node.selectorName(), quid.property.fullname(), quo.node.selectorName(),
+            quo.property.fullname());
     }
 
     /**
@@ -650,7 +650,7 @@ public abstract class QueryBuilder implements QueryObjectModelFactory {
      */
     public final PropertyExistence propertyExistence(QualifedProperty<?, ?> qualifiedProperty)
         throws RepositoryException {
-        return propertyExistence(qualifiedProperty.node.selectorName(), qualifiedProperty.property.propertyName());
+        return propertyExistence(qualifiedProperty.node.selectorName(), qualifiedProperty.property.fullname());
     }
 
     /**
@@ -685,7 +685,7 @@ public abstract class QueryBuilder implements QueryObjectModelFactory {
      */
     public final FullTextSearch fullTextSearch(QualifedProperty<?, ?> qualifiedProperty,
         StaticOperand fullTextSearchExpression) throws RepositoryException {
-        return fullTextSearch(qualifiedProperty.node.selectorName(), qualifiedProperty.property.propertyName(),
+        return fullTextSearch(qualifiedProperty.node.selectorName(), qualifiedProperty.property.fullname(),
             fullTextSearchExpression);
     }
 
@@ -809,7 +809,7 @@ public abstract class QueryBuilder implements QueryObjectModelFactory {
      * @see {@link #propertyValue(String, String)}
      */
     public final PropertyValue propertyValue(QualifedProperty<?, ?> qualifedProperty) throws RepositoryException {
-        return propertyValue(qualifedProperty.node.selectorName(), qualifedProperty.property.propertyName());
+        return propertyValue(qualifedProperty.node.selectorName(), qualifedProperty.property.fullname());
     }
 
     /**
@@ -1063,7 +1063,7 @@ public abstract class QueryBuilder implements QueryObjectModelFactory {
      * @see {@link #column(String, String, String)}
      */
     public final Column column(QualifedProperty<?, ?> qualifedProperty, String column) throws RepositoryException {
-        return column(qualifedProperty.node.selectorName(), qualifedProperty.property.propertyName(), column);
+        return column(qualifedProperty.node.selectorName(), qualifedProperty.property.fullname(), column);
     }
 
     /**

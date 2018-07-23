@@ -30,10 +30,8 @@ import java.util.stream.Stream;
 import javax.jcr.Node;
 import javax.jcr.RepositoryException;
 import javax.jcr.nodetype.ConstraintViolationException;
-import javax.jcr.nodetype.NodeDefinitionTemplate;
 import javax.jcr.nodetype.NodeType;
 import javax.jcr.nodetype.NodeTypeTemplate;
-import javax.jcr.version.OnParentVersionAction;
 
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.mutable.MutableObject;
@@ -46,10 +44,10 @@ import jcrbox.fp.JcrConsumer;
  * @param <N>
  *            self type
  */
-public interface JcrNode<N extends Enum<N> & JcrNode<N>> {
+public interface JcrNode<N extends Enum<N> & JcrNode<N>> extends JcrLiteral<N> {
 
     /**
-     * Annotation to define a top-level JCR node type.
+     * Annotation to define a JCR node type.
      */
     @Documented
     @Retention(RetentionPolicy.RUNTIME)
@@ -100,64 +98,6 @@ public interface JcrNode<N extends Enum<N> & JcrNode<N>> {
     }
 
     /**
-     * Annotation to define a JCR child node type.
-     */
-    @Documented
-    @Retention(RetentionPolicy.RUNTIME)
-    @Target(ElementType.FIELD)
-    public @interface ChildNodeDefinition {
-        /**
-         * Whether a child node of this definition is automatically created.
-         *
-         * @return {@code boolean}, default {@code false}
-         */
-        boolean autoCreated() default false;
-
-        /**
-         * Whether a child node of this definition is mandatory.
-         *
-         * @return {@code boolean}, default {@code false}
-         */
-        boolean mandatory() default false;
-
-        /**
-         * The on parent version action of a child node of this definition.
-         *
-         * @return {@code int}, default ignored
-         * @see OnParentVersionAction
-         */
-        int onParentVersion() default Integer.MIN_VALUE;
-
-        /**
-         * Whether the child node definition is protected.
-         *
-         * @return {@code boolean}, default {@code false}
-         */
-        boolean isProtected() default false;
-
-        /**
-         * Required primary types of a child node of this definition.
-         * 
-         * @return {@link String}[], default {@code {}}
-         */
-        String[] requiredPrimaryTypeNames() default {};
-
-        /**
-         * Default primary type of a child node of this definition.
-         * 
-         * @return {@link String}, default {@link NodeType#NT_UNSTRUCTURED}
-         */
-        String defaultPrimaryTypeName() default NodeType.NT_UNSTRUCTURED;
-
-        /**
-         * Whether same name sibling nodes of this definition are allowed.
-         * 
-         * @return {@code boolean}, default {@code false}
-         */
-        boolean sameNameSiblings() default false;
-    }
-
-    /**
      * Configure a {@link NodeTypeTemplate} from this enum constant, using, if available, the settings declared by its
      * {@link NodeDefinition}.
      * 
@@ -166,7 +106,7 @@ public interface JcrNode<N extends Enum<N> & JcrNode<N>> {
      * @throws ConstraintViolationException
      */
     default NodeTypeTemplate configure(NodeTypeTemplate ntt) throws ConstraintViolationException {
-        ntt.setName(nodeName());
+        ntt.setName(fullname());
         final MutableObject<String[]> annotatedSupertypes = new MutableObject<>(ArrayUtils.EMPTY_STRING_ARRAY);
         Optional.ofNullable(EnumHelper.getAnnotation(asEnum(), NodeDefinition.class))
             .ifPresent((JcrConsumer<NodeDefinition>) def -> {
@@ -179,7 +119,7 @@ public interface JcrNode<N extends Enum<N> & JcrNode<N>> {
             });
 
         final String[] supertypes =
-            Stream.concat(Stream.of(annotatedSupertypes.getValue()), getSupertypes().stream().map(JcrNode::nodeName))
+            Stream.concat(Stream.of(annotatedSupertypes.getValue()), getSupertypes().stream().map(JcrLiteral::fullname))
                 .distinct().toArray(String[]::new);
 
         if (supertypes.length > 0) {
@@ -196,62 +136,6 @@ public interface JcrNode<N extends Enum<N> & JcrNode<N>> {
      */
     default Set<? extends JcrNode<?>> getSupertypes() {
         return Collections.emptySet();
-    }
-
-    /**
-     * Configure a {@link NodeDefinitionTemplate} from this enum constant, using, if available, the settings declared by
-     * its {@link ChildNodeDefinition}.
-     * 
-     * @param ndt
-     * @return @{code ndt}
-     * @throws ConstraintViolationException
-     */
-    default NodeDefinitionTemplate configure(NodeDefinitionTemplate ndt) throws ConstraintViolationException {
-        ndt.setName(nodeName());
-        Optional.ofNullable(EnumHelper.getAnnotation(asEnum(), ChildNodeDefinition.class))
-            .ifPresent((JcrConsumer<ChildNodeDefinition>) def -> {
-                ndt.setAutoCreated(def.autoCreated());
-                ndt.setMandatory(def.mandatory());
-                if (def.onParentVersion() >= 0) {
-                    ndt.setOnParentVersion(def.onParentVersion());
-                }
-                ndt.setProtected(def.isProtected());
-                ndt.setRequiredPrimaryTypeNames(def.requiredPrimaryTypeNames());
-                ndt.setDefaultPrimaryTypeName(def.defaultPrimaryTypeName());
-                ndt.setSameNameSiblings(def.sameNameSiblings());
-            });
-        return ndt;
-    }
-
-    /**
-     * Get the JCR namespace of the modeled node type.
-     *
-     * @return {@link String}
-     * @see JcrNamespace.Helper#getNamespace(Class)
-     */
-    default String namespace() {
-        return JcrNamespace.Helper.getNamespace(asEnum().getDeclaringClass());
-    }
-
-    /**
-     * Get the basename of the modeled node type.
-     * 
-     * @return {@link String}
-     * @see EnumHelper#basename(Enum)
-     */
-    default String basename() {
-        return EnumHelper.basename(asEnum());
-    }
-
-    /**
-     * Get the fully-qualified name of the modeled node type.
-     *
-     * @return {@link String}
-     * @see #basename()
-     * @see JcrNamespace.Helper#format(Class, String)
-     */
-    default String nodeName() {
-        return JcrNamespace.Helper.format(getClass(), basename());
     }
 
     /**
@@ -276,16 +160,6 @@ public interface JcrNode<N extends Enum<N> & JcrNode<N>> {
     }
 
     /**
-     * Get {@code this} as an {@link Enum} constant.
-     *
-     * @return {@code N}
-     */
-    @SuppressWarnings("unchecked")
-    default N asEnum() {
-        return (N) this;
-    }
-
-    /**
      * Learn whether this enum constant models the primary node type of the specified {@link Node}.
      *
      * @param node
@@ -305,7 +179,7 @@ public interface JcrNode<N extends Enum<N> & JcrNode<N>> {
      * @see {@link Node#isNodeType(String)}
      */
     default boolean isTypeOf(Node node) throws RepositoryException {
-        return node.isNodeType(nodeName());
+        return node.isNodeType(fullname());
     }
 
     /**
@@ -317,6 +191,6 @@ public interface JcrNode<N extends Enum<N> & JcrNode<N>> {
      * @see {@link NodeType#isNodeType(String)}
      */
     default boolean isAssignableFrom(NodeType nodeType) throws RepositoryException {
-        return nodeType.isNodeType(nodeName());
+        return nodeType.isNodeType(fullname());
     }
 }

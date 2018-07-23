@@ -13,6 +13,7 @@ import jcrbox.query.JcrQuery.PathRoot;
 /**
  * Test structure describing a JCR layout.
  */
+@JcrNamespace(TestJcrStructure.NS)
 public class TestJcrStructure {
 
     /**
@@ -29,9 +30,8 @@ public class TestJcrStructure {
      * Enum describing custom JCR nodes.
      */
     //@formatter:off
-    @JcrNamespace(NS)
     public enum Nodes implements JcrNode<Nodes> {
-        @NodeDefinition(supertypes = NodeType.NT_RESOURCE)
+        @NodeDefinition(supertypes = { NodeType.MIX_REFERENCEABLE, NodeType.NT_RESOURCE })
         INVOICE,
 
         CUSTOMER;
@@ -54,7 +54,6 @@ public class TestJcrStructure {
     /**
      * Enum describing custom JCR properties.
      */
-    @JcrNamespace(NS)
     public enum Properties implements JcrProperty<Properties> {
 
         @PropertyDefinition(constrainAsEnum = InvoiceStatus.class, autoCreated = true)
@@ -67,7 +66,10 @@ public class TestJcrStructure {
         NAME,
 
         @PropertyDefinition(PropertyType.BOOLEAN)
-        VERIFIED;
+        VERIFIED,
+
+        @PropertyDefinition(value = PropertyType.REFERENCE, multiple = true)
+        INVOICE_REF;
     }
     //@formatter:on
 

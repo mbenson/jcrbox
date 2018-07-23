@@ -123,7 +123,7 @@ public class Jcr {
      */
     public WithNode withNode(Path path, JcrNode<?> defaultNodeType, JcrNode<?> finalNodeType)
         throws RepositoryException {
-        return withNode(path.absolute(), defaultNodeType.nodeName(), finalNodeType.nodeName());
+        return withNode(path.absolute(), defaultNodeType.fullname(), finalNodeType.fullname());
     }
 
     /**
@@ -158,7 +158,7 @@ public class Jcr {
     public NodeType getOrRegisterNodeType(JcrNode<?> node, JcrFunction<NodeTypeManager, NodeTypeTemplate> definer)
         throws RepositoryException {
         final NodeTypeManager mgr = session.getWorkspace().getNodeTypeManager();
-        final String name = node.nodeName();
+        final String name = node.fullname();
         if (mgr.hasNodeType(name) && !allowMetaUpdates) {
             return mgr.getNodeType(name);
         }
@@ -179,7 +179,7 @@ public class Jcr {
     public NodeType getOrRegisterNodeType(JcrNode<?> node, JcrConsumer<NodeTypeTemplate> definer)
         throws RepositoryException {
         final NodeTypeManager mgr = session.getWorkspace().getNodeTypeManager();
-        final String name = node.nodeName();
+        final String name = node.fullname();
         if (mgr.hasNodeType(name) && !allowMetaUpdates) {
             return mgr.getNodeType(name);
         }
@@ -207,29 +207,29 @@ public class Jcr {
      * Add {@code childNode} to {@code node}.
      *
      * @param node
-     * @param childNode
+     * @param child
      * @return success
      * @throws RepositoryException
      */
-    public boolean addTo(NodeTypeTemplate node, JcrNode<?> childNode) throws RepositoryException {
-        return addTo(node, childNode, JcrConsumer.noop());
+    public boolean addTo(NodeTypeTemplate node, JcrChild<?> child) throws RepositoryException {
+        return addTo(node, child, JcrConsumer.noop());
     }
 
     /**
      * Add {@code childNode} to {@code node} with additional configuration.
      *
      * @param node
-     * @param childNode
+     * @param child
      * @param config
      * @return success
      * @throws RepositoryException
      */
     @SuppressWarnings("unchecked")
-    public boolean addTo(NodeTypeTemplate node, JcrNode<?> childNode, JcrConsumer<NodeDefinitionTemplate> config)
+    public boolean addTo(NodeTypeTemplate node, JcrChild<?> child, JcrConsumer<NodeDefinitionTemplate> config)
         throws RepositoryException {
         final NodeDefinitionTemplate nodeDefinitionTemplate =
             session.getWorkspace().getNodeTypeManager().createNodeDefinitionTemplate();
-        childNode.configure(nodeDefinitionTemplate);
+        child.configure(nodeDefinitionTemplate);
         config.accept(nodeDefinitionTemplate);
         return node.getNodeDefinitionTemplates().add(nodeDefinitionTemplate);
     }
@@ -673,6 +673,6 @@ public class Jcr {
     }
     
     private String nameOf(JcrNode<?> nodeType) {
-        return nodeType == null ? null : nodeType.nodeName();
+        return nodeType == null ? null : nodeType.fullname();
     }
 }

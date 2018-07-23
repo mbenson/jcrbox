@@ -46,7 +46,7 @@ import jcrbox.fp.JcrFunction;
  * @param <P>
  *            self type
  */
-public interface JcrProperty<P extends Enum<P> & JcrProperty<P>> {
+public interface JcrProperty<P extends Enum<P> & JcrProperty<P>> extends JcrLiteral<P> {
 
     /**
      * For a given enum {@code PT}, if another enum {@code P} declares a property whose
@@ -312,7 +312,7 @@ public interface JcrProperty<P extends Enum<P> & JcrProperty<P>> {
 
         final DefinitionHandler h = new DefinitionHandler();
 
-        pdt.setName(propertyName());
+        pdt.setName(fullname());
         Optional.ofNullable(EnumHelper.getAnnotation(asEnum(), PropertyDefinition.class)).ifPresent(def -> {
             pdt.setAutoCreated(def.autoCreated());
             pdt.setFullTextSearchable(def.fullTextSearchable());
@@ -327,47 +327,6 @@ public interface JcrProperty<P extends Enum<P> & JcrProperty<P>> {
             h.andleDefaultValues(def, pdt, valueFactory);
         });
         return pdt;
-    }
-
-    /**
-     * Get the JCR namespace of the modeled property.
-     *
-     * @return {@link String}
-     * @see JcrNamespace.Helper#getNamespace(Class)
-     */
-    default String namespace() {
-        return JcrNamespace.Helper.getNamespace(getClass());
-    }
-
-    /**
-     * Get the basename of the modeled property.
-     * 
-     * @return {@link String}
-     * @see EnumHelper#basename(Enum)
-     */
-    default String basename() {
-        return EnumHelper.basename(asEnum());
-    }
-
-    /**
-     * Get the fully-qualified name of the modeled property.
-     *
-     * @return {@link String}
-     * @see #basename()
-     * @see JcrNamespace.Helper#format(Class, String)
-     */
-    default String propertyName() {
-        return JcrNamespace.Helper.format(getClass(), basename());
-    }
-
-    /**
-     * Get {@code this} as an {@link Enum} constant.
-     *
-     * @return {@code P}
-     */
-    @SuppressWarnings("unchecked")
-    default P asEnum() {
-        return (P) this;
     }
 
     /**

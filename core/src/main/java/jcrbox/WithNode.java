@@ -102,7 +102,7 @@ public class WithNode {
      * @return {@link WithNode}
      */
     public WithNode next(String name, JcrNode<?> type) {
-        return next(name, type.nodeName());
+        return next(name, type.fullname());
     }
 
     /**
@@ -111,8 +111,8 @@ public class WithNode {
      * @param child
      * @return {@link WithNode}
      */
-    public WithNode next(JcrNode<?> child) {
-        return next(child.nodeName());
+    public WithNode next(JcrChild<?> child) {
+        return next(child.fullname());
     }
 
     /**
@@ -154,7 +154,7 @@ public class WithNode {
      * @return {@link WithNode}
      */
     public WithNode path(String path, JcrNode<?> step, JcrNode<?> type) {
-        return path(path, step.nodeName(), type.nodeName());
+        return path(path, step.fullname(), type.fullname());
     }
 
     /**
@@ -243,7 +243,7 @@ public class WithNode {
      * @throws RepositoryException
      */
     public WithNode set(JcrProperty<?> property, JcrFunction<ValueFactory, Value> value) throws RepositoryException {
-        return set(property.propertyName(), value);
+        return set(property.fullname(), value);
     }
 
     /**
@@ -269,7 +269,7 @@ public class WithNode {
      */
     public WithNode setMulti(JcrProperty<?> property, JcrFunction<ValueFactory, Value[]> values)
         throws RepositoryException {
-        return setMulti(property.propertyName(), values);
+        return setMulti(property.fullname(), values);
     }
 
     /**
@@ -297,7 +297,7 @@ public class WithNode {
      * @throws RepositoryException
      */
     public WithNode addTo(JcrProperty<?> property, JcrFunction<ValueFactory, Value> value) throws RepositoryException {
-        return addTo(property.propertyName(), value);
+        return addTo(property.fullname(), value);
     }
 
     /**
@@ -308,7 +308,7 @@ public class WithNode {
      * @throws RepositoryException
      */
     public Property get(JcrProperty<?> property) throws RepositoryException {
-        return getTarget().getProperty(property.propertyName());
+        return getTarget().getProperty(property.fullname());
     }
 
     /**
@@ -320,7 +320,7 @@ public class WithNode {
      * @throws RepositoryException
      */
     public boolean has(JcrProperty<?> property) throws RepositoryException {
-        return getTarget().hasProperty(property.propertyName());
+        return getTarget().hasProperty(property.fullname());
     }
 
     /**
