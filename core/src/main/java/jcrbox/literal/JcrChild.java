@@ -13,7 +13,7 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
-package jcrbox;
+package jcrbox.literal;
 
 import java.lang.annotation.Documented;
 import java.lang.annotation.ElementType;
@@ -35,6 +35,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.mutable.MutableObject;
 
 import jcrbox.fp.JcrConsumer;
+import jcrbox.util.EnumHelper;
 
 /**
  * {@link JcrLiteral} to define child nodes.
@@ -42,7 +43,7 @@ import jcrbox.fp.JcrConsumer;
  * @param <N>
  *            self type
  */
-public interface JcrChild<N extends Enum<N> & JcrChild<N>> extends JcrLiteral<N> {
+public interface JcrChild<N extends Enum<N> & JcrChild<N>> extends JcrSource<N> {
 
     /**
      * Annotation to define a JCR child node.

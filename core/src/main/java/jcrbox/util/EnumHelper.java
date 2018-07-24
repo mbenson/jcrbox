@@ -13,7 +13,7 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
-package jcrbox;
+package jcrbox.util;
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
@@ -25,6 +25,9 @@ import java.util.stream.Stream;
 
 import org.apache.commons.text.WordUtils;
 
+import jcrbox.literal.JcrNode;
+import jcrbox.literal.JcrProperty;
+
 /**
  * Utility class for {@link JcrNode} and {@link JcrProperty} support.
  */
@@ -32,12 +35,13 @@ public class EnumHelper {
 
     /**
      * Transform an underscore-delimited {@link String} to camel case, tokenizing on the underscores.
+     * 
      * @param s
      * @return camel case {@link String}, {@code null} if {@code s} is {@code null}
      */
-    public static String underscoreDelimmitedToCamelCase(String s) {
-        return s == null ? null :WordUtils
-                .uncapitalize(Stream.of(s.split("_")).map(WordUtils::capitalizeFully).collect(Collectors.joining()));
+    public static String underscoreDelimitedToCamelCase(String s) {
+        return s == null ? null : WordUtils
+            .uncapitalize(Stream.of(s.split("_")).map(WordUtils::capitalizeFully).collect(Collectors.joining()));
     }
 
     /**
@@ -47,7 +51,7 @@ public class EnumHelper {
      * @return {@link String}
      */
     public static <E extends Enum<E>> String basename(E e) {
-        return underscoreDelimmitedToCamelCase(e.name());
+        return underscoreDelimitedToCamelCase(e.name());
     }
 
     /**
@@ -57,7 +61,7 @@ public class EnumHelper {
      * @param annotationType
      * @return {@code A}
      */
-    static <A extends Annotation> A getAnnotation(Enum<?> e, Class<A> annotationType) {
+    public static <A extends Annotation> A getAnnotation(Enum<?> e, Class<A> annotationType) {
         return getField(e).getAnnotation(annotationType);
     }
 
@@ -68,7 +72,7 @@ public class EnumHelper {
      * @param annotationType
      * @return {@code boolean}
      */
-    static boolean isAnnotationPresent(Enum<?> e, Class<? extends Annotation> annotationType) {
+    public static boolean isAnnotationPresent(Enum<?> e, Class<? extends Annotation> annotationType) {
         return getField(e).isAnnotationPresent(annotationType);
     }
 
@@ -79,7 +83,7 @@ public class EnumHelper {
      * @return {@link Predicate}
      * @see #isAnnotationPresent(Enum, Class)
      */
-    static Predicate<Enum<?>> isAnnotationPresent(Class<? extends Annotation> annotationType) {
+    public static Predicate<Enum<?>> isAnnotationPresent(Class<? extends Annotation> annotationType) {
         return e -> isAnnotationPresent(e, annotationType);
     }
 
@@ -91,7 +95,7 @@ public class EnumHelper {
      * @param fn
      * @return {@link Supplier}
      */
-    static <E extends Enum<E>, R> Supplier<R> bindArgument(E e, Function<? super E, R> fn) {
+    public static <E extends Enum<E>, R> Supplier<R> bindArgument(E e, Function<? super E, R> fn) {
         return () -> fn.apply(e);
     }
 

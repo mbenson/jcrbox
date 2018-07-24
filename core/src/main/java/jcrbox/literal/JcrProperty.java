@@ -13,7 +13,7 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
-package jcrbox;
+package jcrbox.literal;
 
 import java.lang.annotation.Documented;
 import java.lang.annotation.ElementType;
@@ -36,9 +36,10 @@ import javax.jcr.version.OnParentVersionAction;
 
 import org.apache.commons.lang3.Validate;
 
-import jcrbox.JcrProperty.PropertyDefinition.DefaultValues;
-import jcrbox.JcrProperty.PropertyDefinition.DefaultValues.Other;
 import jcrbox.fp.JcrFunction;
+import jcrbox.literal.JcrProperty.PropertyDefinition.DefaultValues;
+import jcrbox.literal.JcrProperty.PropertyDefinition.DefaultValues.Other;
+import jcrbox.util.EnumHelper;
 
 /**
  * Define JCR properties with a Java enum.
@@ -330,12 +331,12 @@ public interface JcrProperty<P extends Enum<P> & JcrProperty<P>> extends JcrLite
     }
 
     /**
-     * Obtain a qualified form of this {@link JcrProperty} relative to {@code node}.
+     * Obtain a qualified form of this {@link JcrProperty} relative to {@code source}.
      *
-     * @param node
+     * @param source
      * @return {@link QualifedProperty}
      */
-    default <N extends Enum<N> & JcrNode<N>> QualifedProperty<N, P> of(N node) {
-        return new QualifedProperty<>(node, asEnum());
+    default <S extends Enum<S> & JcrSource<S>> QualifedProperty<S, P> of(S source) {
+        return new QualifedProperty<>(source, asEnum());
     }
 }

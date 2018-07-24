@@ -35,6 +35,9 @@ import jcrbox.fp.JcrConsumer;
 import jcrbox.fp.JcrFunction;
 import jcrbox.fp.JcrOperator;
 import jcrbox.fp.JcrSupplier;
+import jcrbox.literal.JcrChild;
+import jcrbox.literal.JcrNode;
+import jcrbox.literal.JcrProperty;
 
 /**
  * Defines a set of convenience methods around a {@link Node}.

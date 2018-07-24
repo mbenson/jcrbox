@@ -13,22 +13,24 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
-package jcrbox;
+package jcrbox.literal;
+
+import java.util.Objects;
 
 /**
  * Represents a property of a node.
  *
- * @param <N>
- *            {@link JcrNode} type
+ * @param <S>
+ *            {@link JcrSource} type
  * @param <P>
  *            {@link JcrProperty} type
  */
-public class QualifedProperty<N extends Enum<N> & JcrNode<N>, P extends Enum<P> & JcrProperty<P>> {
+public class QualifedProperty<S extends Enum<S> & JcrSource<S>, P extends Enum<P> & JcrProperty<P>> {
 
     /**
-     * The {@code N} node of this {@link QualifedProperty}.
+     * The {@code S} source of this {@link QualifedProperty}.
      */
-    public final N node;
+    public final S source;
 
     /**
      * The {@code P} property of this {@link QualifedProperty}.
@@ -38,12 +40,12 @@ public class QualifedProperty<N extends Enum<N> & JcrNode<N>, P extends Enum<P> 
     /**
      * Create a new {@link QualifedProperty} instance.
      *
-     * @param node
+     * @param source
      * @param property
      */
-    public QualifedProperty(N node, P property) {
+    public QualifedProperty(S source, P property) {
         super();
-        this.node = node;
-        this.property = property;
+        this.source = Objects.requireNonNull(source, "source");
+        this.property = Objects.requireNonNull(property, "property");
     }
 }

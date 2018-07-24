@@ -22,8 +22,9 @@ import javax.jcr.nodetype.NodeTypeExistsException;
 import javax.jcr.query.Row;
 
 import jcrbox.Jcr;
-import jcrbox.JcrNode;
 import jcrbox.WithNode;
+import jcrbox.literal.JcrNode;
+import jcrbox.literal.JcrSource;
 
 /**
  * Enhanced JCR {@link Row}.
@@ -169,51 +170,51 @@ public interface JcrRow extends Row {
     /**
      * Get the node specified by {@code node}.
      * 
-     * @param node
+     * @param source
      * @return {@link NodeTypeExistsException}
      * @throws RepositoryException
      * @see {@link JcrNode#selectorName()}
      */
-    default Node getNode(JcrNode<?> node) throws RepositoryException {
-        return getNode(node.selectorName());
+    default Node getNode(JcrSource<?> source) throws RepositoryException {
+        return getNode(source.selectorName());
     }
 
     /**
      * Adapt the specified node to the {@link WithNode} API.
      * 
-     * @param node
+     * @param source
      * @return {@link WithNode}
      * @throws RepositoryException
      * @see {@link #withNode(String)}
      * @see {@link JcrNode#selectorName()}
      */
-    default WithNode withNode(JcrNode<?> node) throws RepositoryException {
-        return withNode(node.selectorName());
+    default WithNode withNode(JcrSource<?> source) throws RepositoryException {
+        return withNode(source.selectorName());
     }
 
     /**
      * Get the path of the specified result node.
      * 
-     * @param node
+     * @param source
      * @return {@link StringIndexOutOfBoundsException}
      * @throws RepositoryException
      * @see {@link #getPath(String)}
      * @see JcrNode#selectorName()
      */
-    default String getPath(JcrNode<?> node) throws RepositoryException {
-        return getPath(node.selectorName());
+    default String getPath(JcrSource<?> source) throws RepositoryException {
+        return getPath(source.selectorName());
     }
 
     /**
      * Get the score of the specified result node.
      * 
-     * @param node
+     * @param source
      * @return {@code double}
      * @throws RepositoryException
      * @see {@link #getScore(String)}
      * @see JcrNode#selectorName()
      */
-    default double getScore(JcrNode<?> node) throws RepositoryException {
-        return getScore(node.selectorName());
+    default double getScore(JcrSource<?> source) throws RepositoryException {
+        return getScore(source.selectorName());
     }
 }

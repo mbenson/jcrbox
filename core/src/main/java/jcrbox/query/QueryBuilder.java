@@ -73,10 +73,11 @@ import org.apache.commons.lang3.Validate;
 import org.apache.commons.lang3.reflect.TypeUtils;
 
 import jcrbox.Jcr;
-import jcrbox.JcrNode;
-import jcrbox.QualifedProperty;
 import jcrbox.fp.JcrFunction;
 import jcrbox.fp.JcrSupplier;
+import jcrbox.literal.JcrNode;
+import jcrbox.literal.JcrSource;
+import jcrbox.literal.QualifedProperty;
 import jcrbox.util.Lazy;
 
 /**
@@ -348,7 +349,31 @@ public abstract class QueryBuilder implements QueryObjectModelFactory {
      * @throws RepositoryException
      */
     public final Selector selector(JcrNode<?> node) throws RepositoryException {
-        return selector(node.fullname(), node.selectorName());
+        return selector(node, node);
+    }
+
+    /**
+     * Create a selector for the specified {@code nodeType}, using selector name of {@code source}.
+     * 
+     * @param nodeType
+     * @param source
+     * @return {@link Selector}
+     * @throws RepositoryException
+     */
+    public final Selector selector(String nodeType, JcrSource<?> source) throws RepositoryException {
+        return selector(nodeType, source.selectorName());
+    }
+
+    /**
+     * Create a selector for the specified {@code nodeType}, using selector name of {@code source}.
+     * 
+     * @param nodeType
+     * @param source
+     * @return {@link Selector}
+     * @throws RepositoryException
+     */
+    public final Selector selector(JcrNode<?> nodeType, JcrSource<?> source) throws RepositoryException {
+        return selector(nodeType.fullname(), source);
     }
 
     /**
@@ -410,20 +435,20 @@ public abstract class QueryBuilder implements QueryObjectModelFactory {
      */
     public EquiJoinCondition equiJoinCondition(QualifedProperty<?, ?> quid, QualifedProperty<?, ?> quo)
         throws RepositoryException {
-        return equiJoinCondition(quid.node.selectorName(), quid.property.fullname(), quo.node.selectorName(),
+        return equiJoinCondition(quid.source.selectorName(), quid.property.fullname(), quo.source.selectorName(),
             quo.property.fullname());
     }
 
     /**
-     * Convenience method to join two nodes by one's reference property.
+     * Convenience method to join two sources by one's reference property.
      * 
      * @param ref
-     * @param node
+     * @param source
      * @return {@link JoinCondition}
      * @throws RepositoryException
      */
-    public JoinCondition joinByReference(QualifedProperty<?, ?> ref, JcrNode<?> node) throws RepositoryException {
-        return equiJoinCondition(ref.node.selectorName(), ref.property.fullname(), node.selectorName(),
+    public JoinCondition joinByReference(QualifedProperty<?, ?> ref, JcrSource<?> source) throws RepositoryException {
+        return equiJoinCondition(ref.source.selectorName(), ref.property.fullname(), source.selectorName(),
             Property.JCR_UUID);
     }
 
@@ -451,16 +476,16 @@ public abstract class QueryBuilder implements QueryObjectModelFactory {
     }
 
     /**
-     * @param node1
-     * @param node2
+     * @param source1
+     * @param source2
      * @param node2Path
      * @return {@link SameNodeJoinCondition}
      * @throws RepositoryException
      * @see {@link #sameNodeJoinCondition(String, String, String)}
      */
-    public final SameNodeJoinCondition sameNodeJoinCondition(JcrNode<?> node1, JcrNode<?> node2, String node2Path)
+    public final SameNodeJoinCondition sameNodeJoinCondition(JcrSource<?> source1, JcrSource<?> source2, String node2Path)
         throws RepositoryException {
-        return sameNodeJoinCondition(node1.selectorName(), node2.selectorName(), node2Path);
+        return sameNodeJoinCondition(source1.selectorName(), source2.selectorName(), node2Path);
     }
 
     /**
@@ -491,7 +516,7 @@ public abstract class QueryBuilder implements QueryObjectModelFactory {
      * @throws RepositoryException
      * @see {@link #childNodeJoinCondition(String, String)}
      */
-    public final ChildNodeJoinCondition childNodeJoinCondition(JcrNode<?> child, JcrNode<?> parent)
+    public final ChildNodeJoinCondition childNodeJoinCondition(JcrSource<?> child, JcrSource<?> parent)
         throws RepositoryException {
         return childNodeJoinCondition(child.selectorName(), parent.selectorName());
     }
@@ -524,7 +549,7 @@ public abstract class QueryBuilder implements QueryObjectModelFactory {
      * @throws RepositoryException
      * @see {@link #descendantNodeJoinCondition(String, String)}
      */
-    public final DescendantNodeJoinCondition descendantNodeJoinCondition(JcrNode<?> descendant, JcrNode<?> ancestor)
+    public final DescendantNodeJoinCondition descendantNodeJoinCondition(JcrSource<?> descendant, JcrSource<?> ancestor)
         throws RepositoryException {
         return descendantNodeJoinCondition(descendant.selectorName(), ancestor.selectorName());
     }
@@ -663,7 +688,7 @@ public abstract class QueryBuilder implements QueryObjectModelFactory {
      */
     public final PropertyExistence propertyExistence(QualifedProperty<?, ?> qualifiedProperty)
         throws RepositoryException {
-        return propertyExistence(qualifiedProperty.node.selectorName(), qualifiedProperty.property.fullname());
+        return propertyExistence(qualifiedProperty.source.selectorName(), qualifiedProperty.property.fullname());
     }
 
     /**
@@ -698,7 +723,7 @@ public abstract class QueryBuilder implements QueryObjectModelFactory {
      */
     public final FullTextSearch fullTextSearch(QualifedProperty<?, ?> qualifiedProperty,
         StaticOperand fullTextSearchExpression) throws RepositoryException {
-        return fullTextSearch(qualifiedProperty.node.selectorName(), qualifiedProperty.property.fullname(),
+        return fullTextSearch(qualifiedProperty.source.selectorName(), qualifiedProperty.property.fullname(),
             fullTextSearchExpression);
     }
 
@@ -729,7 +754,7 @@ public abstract class QueryBuilder implements QueryObjectModelFactory {
      * @throws RepositoryException
      * @see {@link #sameNode(String, String)}
      */
-    public final SameNode sameNode(JcrNode<?> node, String path) throws RepositoryException {
+    public final SameNode sameNode(JcrSource<?> node, String path) throws RepositoryException {
         return sameNode(node.selectorName(), path);
     }
 
@@ -760,7 +785,7 @@ public abstract class QueryBuilder implements QueryObjectModelFactory {
      * @throws RepositoryException
      * @see {@link #childNode(String, String)}
      */
-    public final ChildNode childNode(JcrNode<?> node, String path) throws RepositoryException {
+    public final ChildNode childNode(JcrSource<?> node, String path) throws RepositoryException {
         return childNode(node.selectorName(), path);
     }
 
@@ -791,7 +816,7 @@ public abstract class QueryBuilder implements QueryObjectModelFactory {
      * @throws RepositoryException
      * @see {@link #descendantNode(String, String)}
      */
-    public final DescendantNode descendantNode(JcrNode<?> node, String path) throws RepositoryException {
+    public final DescendantNode descendantNode(JcrSource<?> node, String path) throws RepositoryException {
         return descendantNode(node.selectorName(), path);
     }
 
@@ -822,7 +847,7 @@ public abstract class QueryBuilder implements QueryObjectModelFactory {
      * @see {@link #propertyValue(String, String)}
      */
     public final PropertyValue propertyValue(QualifedProperty<?, ?> qualifedProperty) throws RepositoryException {
-        return propertyValue(qualifedProperty.node.selectorName(), qualifedProperty.property.fullname());
+        return propertyValue(qualifedProperty.source.selectorName(), qualifedProperty.property.fullname());
     }
 
     /**
@@ -867,7 +892,7 @@ public abstract class QueryBuilder implements QueryObjectModelFactory {
      * @throws RepositoryException
      * @see {@link #nodeName(String)}
      */
-    public final NodeName nodeName(JcrNode<?> node) throws RepositoryException {
+    public final NodeName nodeName(JcrSource<?> node) throws RepositoryException {
         return nodeName(node.selectorName());
     }
 
@@ -895,7 +920,7 @@ public abstract class QueryBuilder implements QueryObjectModelFactory {
      * @throws RepositoryException
      * @see {@link #nodeLocalName(String)}
      */
-    public final NodeLocalName nodeLocalName(JcrNode<?> node) throws RepositoryException {
+    public final NodeLocalName nodeLocalName(JcrSource<?> node) throws RepositoryException {
         return nodeLocalName(node.selectorName());
     }
 
@@ -923,7 +948,7 @@ public abstract class QueryBuilder implements QueryObjectModelFactory {
      * @throws RepositoryException
      * @see {@link #fullTextSearchScore(String)}
      */
-    public final FullTextSearchScore fullTextSearchScore(JcrNode<?> node) throws RepositoryException {
+    public final FullTextSearchScore fullTextSearchScore(JcrSource<?> node) throws RepositoryException {
         return fullTextSearchScore(node.selectorName());
     }
 
@@ -1076,7 +1101,7 @@ public abstract class QueryBuilder implements QueryObjectModelFactory {
      * @see {@link #column(String, String, String)}
      */
     public final Column column(QualifedProperty<?, ?> qualifedProperty, String column) throws RepositoryException {
-        return column(qualifedProperty.node.selectorName(), qualifedProperty.property.fullname(), column);
+        return column(qualifedProperty.source.selectorName(), qualifedProperty.property.fullname(), column);
     }
 
     /**

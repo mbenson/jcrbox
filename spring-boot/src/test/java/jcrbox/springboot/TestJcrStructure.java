@@ -3,10 +3,10 @@ package jcrbox.springboot;
 import javax.jcr.PropertyType;
 import javax.jcr.nodetype.NodeType;
 
-import jcrbox.JcrNamespace;
-import jcrbox.JcrNode;
-import jcrbox.JcrProperty;
-import jcrbox.JcrProperty.DefaultValue;
+import jcrbox.literal.JcrNamespace;
+import jcrbox.literal.JcrNode;
+import jcrbox.literal.JcrProperty;
+import jcrbox.literal.JcrProperty.DefaultValue;
 import jcrbox.query.JcrQuery;
 import jcrbox.query.JcrQuery.PathRoot;
 

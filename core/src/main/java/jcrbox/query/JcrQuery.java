@@ -24,7 +24,7 @@ import java.util.ArrayDeque;
 import java.util.Deque;
 import java.util.stream.Collectors;
 
-import jcrbox.JcrNamespace;
+import jcrbox.literal.JcrNamespace;
 
 /**
  * Marker interface for a class that represents a JCR query in a typesafe manner.

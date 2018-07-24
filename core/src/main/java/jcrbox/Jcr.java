@@ -37,6 +37,9 @@ import org.apache.commons.lang3.Validate;
 
 import jcrbox.fp.JcrConsumer;
 import jcrbox.fp.JcrFunction;
+import jcrbox.literal.JcrChild;
+import jcrbox.literal.JcrNode;
+import jcrbox.literal.JcrProperty;
 import jcrbox.query.JcrQuery;
 import jcrbox.query.JcrResult;
 import jcrbox.query.QueryBuilder;

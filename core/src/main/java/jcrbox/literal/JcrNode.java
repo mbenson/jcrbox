@@ -13,7 +13,7 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
-package jcrbox;
+package jcrbox.literal;
 
 import java.lang.annotation.Documented;
 import java.lang.annotation.ElementType;
@@ -21,10 +21,8 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 import java.util.Collections;
-import java.util.Locale;
 import java.util.Optional;
 import java.util.Set;
-import java.util.function.Predicate;
 import java.util.stream.Stream;
 
 import javax.jcr.Node;
@@ -37,6 +35,7 @@ import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.mutable.MutableObject;
 
 import jcrbox.fp.JcrConsumer;
+import jcrbox.util.EnumHelper;
 
 /**
  * Define JCR node types using a Java enum.
@@ -44,7 +43,7 @@ import jcrbox.fp.JcrConsumer;
  * @param <N>
  *            self type
  */
-public interface JcrNode<N extends Enum<N> & JcrNode<N>> extends JcrLiteral<N> {
+public interface JcrNode<N extends Enum<N> & JcrNode<N>> extends JcrSource<N> {
 
     /**
      * Annotation to define a JCR node type.
@@ -136,27 +135,6 @@ public interface JcrNode<N extends Enum<N> & JcrNode<N>> extends JcrLiteral<N> {
      */
     default Set<? extends JcrNode<?>> getSupertypes() {
         return Collections.emptySet();
-    }
-
-    /**
-     * Get a selector name to use for this node type in queries. Defaults to:
-     * <ul>
-     * <li>If unique, the first character of {@link Enum#name()} in lowercase (US).</li>
-     * <li>Otherwise, {@link Enum#name()} in lowercase (US).</li>
-     * </ul>
-     *
-     * @return {@link String}
-     */
-    default String selectorName() {
-        final String full = asEnum().name().toLowerCase(Locale.US);
-        final String mnemonic = full.substring(0, 1);
-
-        @SuppressWarnings("unchecked")
-        final boolean unique =
-            Stream.of((N[]) getClass().getEnumConstants()).map(Enum::name).map(n -> n.toLowerCase(Locale.US))
-                .map(s -> s.substring(0, 1)).filter(Predicate.isEqual(mnemonic)).count() == 1;
-
-        return unique ? mnemonic : full;
     }
 
     /**
