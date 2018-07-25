@@ -30,7 +30,6 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import javax.jcr.Node;
-import javax.jcr.NodeIterator;
 import javax.jcr.RepositoryException;
 import javax.jcr.Value;
 import javax.jcr.query.QueryResult;
@@ -41,8 +40,7 @@ import jcrbox.Jcr;
 import jcrbox.RangedIterator;
 import jcrbox.WithNode;
 import jcrbox.fp.JcrConsumer;
-import jcrbox.fp.JcrFunction;
-import jcrbox.fp.JcrSupplier;
+import jcrbox.fp.JcrFp;
 import jcrbox.util.Lazy;
 
 /**
@@ -50,7 +48,7 @@ import jcrbox.util.Lazy;
  */
 public class JcrResult implements Iterable<JcrRow> {
 
-    private static <T> Set<T> adapt(T[] array) {
+    private static <T> Set<T> set(T[] array) {
         return Collections.unmodifiableSet(new LinkedHashSet<>(Arrays.asList(array)));
     }
 
@@ -75,19 +73,15 @@ public class JcrResult implements Iterable<JcrRow> {
         super();
         this.jcr = jcr;
         this.wrapped = Objects.requireNonNull(wrapped);
-        selectors = new Lazy<>((JcrSupplier<Set<String>>) () -> adapt(this.wrapped.getSelectorNames()));
-        columns = new Lazy<>((JcrSupplier<Set<String>>) () -> adapt(this.wrapped.getColumnNames()));
-        rows = new Lazy<>(() -> {
+        selectors = new Lazy<>(JcrFp.adapt(() -> set(this.wrapped.getSelectorNames())));
+        columns = new Lazy<>(JcrFp.adapt(() -> set(this.wrapped.getColumnNames())));
+        rows = new Lazy<>(JcrFp.<List<JcrRow>> adapt(() -> {
             final List<JcrRow> result = new ArrayList<>();
-            try {
-                for (RowIterator rowIterator = this.wrapped.getRows(); rowIterator.hasNext();) {
-                    result.add(copyRow(rowIterator.nextRow()));
-                }
-            } catch (RepositoryException e) {
-                throw new IllegalStateException(e);
+            for (RowIterator rowIterator = this.wrapped.getRows(); rowIterator.hasNext();) {
+                result.add(copyRow(rowIterator.nextRow()));
             }
             return result;
-        });
+        }));
     }
 
     /**
@@ -111,7 +105,7 @@ public class JcrResult implements Iterable<JcrRow> {
      * @see QueryResult#getNodes()
      */
     public RangedIterator<Node> nodes() {
-        return RangedIterator.of((JcrSupplier<NodeIterator>) wrapped::getNodes);
+        return RangedIterator.of(wrapped::getNodes);
     }
 
     /**
@@ -122,8 +116,7 @@ public class JcrResult implements Iterable<JcrRow> {
      * @see Jcr#withNode(Node)
      */
     public RangedIterator<WithNode> withNodes() {
-        return RangedIterator.map((JcrSupplier<NodeIterator>) wrapped::getNodes,
-            (JcrFunction<Node, WithNode>) jcr::withNode);
+        return RangedIterator.<Node, WithNode> map(wrapped::getNodes, jcr::withNode);
     }
 
     /**
@@ -142,16 +135,15 @@ public class JcrResult implements Iterable<JcrRow> {
         /*
          * if the copied rows are available, iterate over them; otherwise adapt the original rowIterator
          */
-        return rows.optional().map(RangedIterator::of).orElseGet((JcrSupplier<RangedIterator<JcrRow>>) () ->
+        return rows.optional().map(RangedIterator::of).orElseGet(JcrFp.<RangedIterator<JcrRow>> adapt(
+            () -> new RangedIterator.Adapter<Row, JcrRow>(wrapped.getRows(), row -> new JcrRow.Adapter(jcr, row)) {
 
-        new RangedIterator.Adapter<Row, JcrRow>(wrapped.getRows(), row -> new JcrRow.Adapter(jcr, row)) {
-
-            // can only stream copied rows
-            @Override
-            public Stream<JcrRow> stream() {
-                return rows.get().stream();
-            }
-        });
+                // can only stream copied rows
+                @Override
+                public Stream<JcrRow> stream() {
+                    return rows.get().stream();
+                }
+            }));
     }
 
     /**
@@ -188,7 +180,7 @@ public class JcrResult implements Iterable<JcrRow> {
 
         final Map<String, SelectorInfo> selectorInfo =
             selectors().stream().collect(Collectors.toMap(Function.identity(),
-                (JcrFunction<String, SelectorInfo>) s -> new SelectorInfo(row.getNode(s), row.getScore(s))));
+                JcrFp.<String, SelectorInfo> adapt(s -> new SelectorInfo(row.getNode(s), row.getScore(s)))));
 
         final Map<String, Value> values = new LinkedHashMap<>();
         columns().stream().forEach((JcrConsumer<String>) c -> values.put(c, row.getValue(c)));
@@ -201,6 +193,11 @@ public class JcrResult implements Iterable<JcrRow> {
                 }
             }
 
+            private SelectorInfo getSelectorInfo(String selectorName) throws RepositoryException {
+                return Optional.ofNullable(selectorName).map(selectorInfo::get)
+                    .orElseThrow(() -> new RepositoryException(selectorName));
+            }
+
             @Override
             public Node getNode() throws RepositoryException {
                 assertSingleSelector();
@@ -209,7 +206,7 @@ public class JcrResult implements Iterable<JcrRow> {
 
             @Override
             public Node getNode(String selectorName) throws RepositoryException {
-                return selectorInfo.get(selectorName).node;
+                return getSelectorInfo(selectorName).node;
             }
 
             @Override
@@ -220,7 +217,7 @@ public class JcrResult implements Iterable<JcrRow> {
 
             @Override
             public double getScore(String selectorName) throws RepositoryException {
-                return selectorInfo.get(selectorName).score;
+                return getSelectorInfo(selectorName).score;
             }
 
             @Override
