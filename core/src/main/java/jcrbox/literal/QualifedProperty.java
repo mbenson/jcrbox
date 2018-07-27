@@ -17,6 +17,8 @@ package jcrbox.literal;
 
 import java.util.Objects;
 
+import jcrbox.query.QueryBuilder;
+
 /**
  * Represents a property of a node.
  *
@@ -28,24 +30,55 @@ import java.util.Objects;
 public class QualifedProperty<S extends Enum<S> & JcrSource<S>, P extends Enum<P> & JcrProperty<P>> {
 
     /**
-     * The {@code S} source of this {@link QualifedProperty}.
+     * Special {@link JcrProperty} instances.
      */
-    public final S source;
+    public enum Special implements JcrProperty<Special> {
+        //@formatter:off
+		/**
+		 * Special JCR property that will yield "all columns" when
+		 * passed to a
+		 * {@link QueryBuilder#column(QualifedProperty, String)}. The
+		 * {@code columnName} parameter to that method should be
+		 * specified with a {@code null} value.
+		 */
+		ALL_COLUMNS() {
 
-    /**
-     * The {@code P} property of this {@link QualifedProperty}.
-     */
-    public final P property;
+			@Override
+			public String fullname() {
+				return null;
+			}
+		}
+		//@formatter:om
+	}
 
-    /**
-     * Create a new {@link QualifedProperty} instance.
-     *
-     * @param source
-     * @param property
-     */
-    public QualifedProperty(S source, P property) {
-        super();
-        this.source = Objects.requireNonNull(source, "source");
-        this.property = Objects.requireNonNull(property, "property");
-    }
+	/**
+	 * Get a {@link JcrProperty} that indicates all columns.
+	 *
+	 * @return
+	 */
+	public static JcrProperty<?> allColumns() {
+		return Special.ALL_COLUMNS;
+	}
+
+	/**
+	 * The {@code S} source of this {@link QualifedProperty}.
+	 */
+	public final S source;
+
+	/**
+	 * The {@code P} property of this {@link QualifedProperty}.
+	 */
+	public final P property;
+
+	/**
+	 * Create a new {@link QualifedProperty} instance.
+	 *
+	 * @param source
+	 * @param property
+	 */
+	public QualifedProperty(S source, P property) {
+		super();
+		this.source = Objects.requireNonNull(source, "source");
+		this.property = Objects.requireNonNull(property, "property");
+	}
 }
