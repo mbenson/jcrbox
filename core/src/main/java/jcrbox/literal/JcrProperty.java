@@ -334,9 +334,9 @@ public interface JcrProperty<P extends Enum<P> & JcrProperty<P>> extends JcrLite
      * Obtain a qualified form of this {@link JcrProperty} relative to {@code source}.
      *
      * @param source
-     * @return {@link QualifedProperty}
+     * @return {@link QualifiedProperty}
      */
-    default <S extends Enum<S> & JcrSource<S>> QualifedProperty<S, P> of(S source) {
-        return new QualifedProperty<>(source, asEnum());
+    default <S extends Enum<S> & JcrSource<S>> QualifiedProperty<S, P> of(S source) {
+        return new QualifiedProperty<>(source, asEnum());
     }
 }

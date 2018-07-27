@@ -20,14 +20,14 @@ import java.util.Objects;
 import jcrbox.query.QueryBuilder;
 
 /**
- * Represents a property of a node.
+ * Represents a property of a query source.
  *
  * @param <S>
  *            {@link JcrSource} type
  * @param <P>
  *            {@link JcrProperty} type
  */
-public class QualifedProperty<S extends Enum<S> & JcrSource<S>, P extends Enum<P> & JcrProperty<P>> {
+public class QualifiedProperty<S extends Enum<S> & JcrSource<S>, P extends Enum<P> & JcrProperty<P>> {
 
     /**
      * Special {@link JcrProperty} instances.
@@ -61,22 +61,22 @@ public class QualifedProperty<S extends Enum<S> & JcrSource<S>, P extends Enum<P
 	}
 
 	/**
-	 * The {@code S} source of this {@link QualifedProperty}.
+	 * The {@code S} source of this {@link QualifiedProperty}.
 	 */
 	public final S source;
 
 	/**
-	 * The {@code P} property of this {@link QualifedProperty}.
+	 * The {@code P} property of this {@link QualifiedProperty}.
 	 */
 	public final P property;
 
 	/**
-	 * Create a new {@link QualifedProperty} instance.
+	 * Create a new {@link QualifiedProperty} instance.
 	 *
 	 * @param source
 	 * @param property
 	 */
-	public QualifedProperty(S source, P property) {
+	public QualifiedProperty(S source, P property) {
 		super();
 		this.source = Objects.requireNonNull(source, "source");
 		this.property = Objects.requireNonNull(property, "property");

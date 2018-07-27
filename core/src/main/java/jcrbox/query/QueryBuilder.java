@@ -77,7 +77,7 @@ import jcrbox.fp.JcrFunction;
 import jcrbox.fp.JcrSupplier;
 import jcrbox.literal.JcrNode;
 import jcrbox.literal.JcrSource;
-import jcrbox.literal.QualifedProperty;
+import jcrbox.literal.QualifiedProperty;
 import jcrbox.util.Lazy;
 
 /**
@@ -433,7 +433,7 @@ public abstract class QueryBuilder implements QueryObjectModelFactory {
      * @throws RepositoryException
      * @see {@link #equiJoinCondition(String, String, String, String)}
      */
-    public EquiJoinCondition equiJoinCondition(QualifedProperty<?, ?> quid, QualifedProperty<?, ?> quo)
+    public EquiJoinCondition equiJoinCondition(QualifiedProperty<?, ?> quid, QualifiedProperty<?, ?> quo)
         throws RepositoryException {
         return equiJoinCondition(quid.source.selectorName(), quid.property.fullname(), quo.source.selectorName(),
             quo.property.fullname());
@@ -447,7 +447,7 @@ public abstract class QueryBuilder implements QueryObjectModelFactory {
      * @return {@link JoinCondition}
      * @throws RepositoryException
      */
-    public JoinCondition joinByReference(QualifedProperty<?, ?> ref, JcrSource<?> source) throws RepositoryException {
+    public JoinCondition joinByReference(QualifiedProperty<?, ?> ref, JcrSource<?> source) throws RepositoryException {
         return equiJoinCondition(ref.source.selectorName(), ref.property.fullname(), source.selectorName(),
             Property.JCR_UUID);
     }
@@ -686,7 +686,7 @@ public abstract class QueryBuilder implements QueryObjectModelFactory {
      * @return {@link PropertyExistence}
      * @throws RepositoryException
      */
-    public final PropertyExistence propertyExistence(QualifedProperty<?, ?> qualifiedProperty)
+    public final PropertyExistence propertyExistence(QualifiedProperty<?, ?> qualifiedProperty)
         throws RepositoryException {
         return propertyExistence(qualifiedProperty.source.selectorName(), qualifiedProperty.property.fullname());
     }
@@ -721,7 +721,7 @@ public abstract class QueryBuilder implements QueryObjectModelFactory {
      * @throws RepositoryException
      * @see {@link #fullTextSearch(String, String, StaticOperand)}
      */
-    public final FullTextSearch fullTextSearch(QualifedProperty<?, ?> qualifiedProperty,
+    public final FullTextSearch fullTextSearch(QualifiedProperty<?, ?> qualifiedProperty,
         StaticOperand fullTextSearchExpression) throws RepositoryException {
         return fullTextSearch(qualifiedProperty.source.selectorName(), qualifiedProperty.property.fullname(),
             fullTextSearchExpression);
@@ -846,7 +846,7 @@ public abstract class QueryBuilder implements QueryObjectModelFactory {
      * @throws RepositoryException
      * @see {@link #propertyValue(String, String)}
      */
-    public final PropertyValue propertyValue(QualifedProperty<?, ?> qualifedProperty) throws RepositoryException {
+    public final PropertyValue propertyValue(QualifiedProperty<?, ?> qualifedProperty) throws RepositoryException {
         return propertyValue(qualifedProperty.source.selectorName(), qualifedProperty.property.fullname());
     }
 
@@ -1100,7 +1100,7 @@ public abstract class QueryBuilder implements QueryObjectModelFactory {
      * @throws RepositoryException
      * @see {@link #column(String, String, String)}
      */
-    public final Column column(QualifedProperty<?, ?> qualifedProperty, String column) throws RepositoryException {
+    public final Column column(QualifiedProperty<?, ?> qualifedProperty, String column) throws RepositoryException {
         return column(qualifedProperty.source.selectorName(), qualifedProperty.property.fullname(), column);
     }
 
