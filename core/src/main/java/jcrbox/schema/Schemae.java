@@ -35,7 +35,7 @@ import jcrbox.literal.JcrSource;
 
 /**
  * Utility class for managing schemae.
- * 
+ *
  * @see JcrSchema
  */
 public class Schemae {
@@ -44,20 +44,20 @@ public class Schemae {
 
     /**
      * Get the map of selector names for {@code sourceType}, taking into account {@link JcrSchema} annotations.
-     * 
+     *
      * @param sourceType
      * @return {@link Map}
      */
     public static Map<JcrSource<?>, String> getSelectorNames(Class<? extends JcrSource<?>> sourceType) {
         final JcrSchema schema = SCHEMAE.computeIfAbsent(Objects.requireNonNull(sourceType), Schemae::schema);
-        return SELECTOR_NAMES.computeIfAbsent((schema), Schemae::selectorNames);
+        return SELECTOR_NAMES.computeIfAbsent(schema, Schemae::selectorNames);
     }
 
     private static JcrSchema schema(Class<? extends JcrSource<?>> sourceType) {
         Class<?> t = sourceType;
         while (t != null) {
-            if (sourceType.isAnnotationPresent(JcrSchema.class)) {
-                return sourceType.getAnnotation(JcrSchema.class);
+            if (t.isAnnotationPresent(JcrSchema.class)) {
+                return t.getAnnotation(JcrSchema.class);
             }
             t = t.getEnclosingClass();
         }
