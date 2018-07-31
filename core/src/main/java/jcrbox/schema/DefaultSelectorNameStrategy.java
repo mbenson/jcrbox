@@ -19,7 +19,6 @@ import java.util.HashMap;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
-import java.util.TreeMap;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import org.apache.commons.text.WordUtils;
@@ -38,7 +37,7 @@ public class DefaultSelectorNameStrategy implements SelectorNameStrategy {
     @Override
     public Map<JcrSource<?>, String> generateSelectors(Set<JcrSource<?>> sources) {
         final Map<String, AtomicInteger> counts = new HashMap<>();
-        final Map<JcrSource<?>, String> result = new TreeMap<>();
+        final Map<JcrSource<?>, String> result = new HashMap<>();
 
         for (JcrSource<?> s : sources) {
             final String initials = WordUtils.initials(s.asEnum().name(), '_').toLowerCase(Locale.US);
