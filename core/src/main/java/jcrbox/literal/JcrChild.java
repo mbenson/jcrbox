@@ -34,7 +34,7 @@ import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.mutable.MutableObject;
 
-import jcrbox.fp.JcrConsumer;
+import jcrbox.fp.JcrFp;
 import jcrbox.util.EnumHelper;
 
 /**
@@ -83,14 +83,14 @@ public interface JcrChild<N extends Enum<N> & JcrChild<N>> extends JcrSource<N> 
 
         /**
          * Required primary types of a child node of this definition.
-         * 
+         *
          * @return {@link String}[], default {@code {}}
          */
         String[] requiredPrimaryTypeNames() default {};
 
         /**
          * Default primary type of a child node of this definition.
-         * 
+         *
          * @return {@link String}
          * @see JcrChild#getDefaultPrimaryType()
          */
@@ -98,7 +98,7 @@ public interface JcrChild<N extends Enum<N> & JcrChild<N>> extends JcrSource<N> 
 
         /**
          * Whether same name sibling nodes of this definition are allowed.
-         * 
+         *
          * @return {@code boolean}, default {@code false}
          */
         boolean sameNameSiblings() default false;
@@ -107,7 +107,7 @@ public interface JcrChild<N extends Enum<N> & JcrChild<N>> extends JcrSource<N> 
     /**
      * Configure a {@link NodeDefinitionTemplate} from this enum constant, using, if available, the settings declared by
      * its {@link ChildNodeDefinition}.
-     * 
+     *
      * @param ndt
      * @return @{code ndt}
      * @throws ConstraintViolationException
@@ -120,7 +120,7 @@ public interface JcrChild<N extends Enum<N> & JcrChild<N>> extends JcrSource<N> 
         final MutableObject<String> annotatedDefaultPrimaryTypeName = new MutableObject<>();
 
         Optional.ofNullable(EnumHelper.getAnnotation(asEnum(), ChildNodeDefinition.class))
-            .ifPresent((JcrConsumer<ChildNodeDefinition>) def -> {
+            .ifPresent(JcrFp.adapt(def -> {
                 ndt.setAutoCreated(def.autoCreated());
                 ndt.setMandatory(def.mandatory());
                 if (def.onParentVersion() >= 0) {
@@ -130,7 +130,7 @@ public interface JcrChild<N extends Enum<N> & JcrChild<N>> extends JcrSource<N> 
                 annotatedRequiredPrimaryTypeNames.setValue(def.requiredPrimaryTypeNames());
                 annotatedDefaultPrimaryTypeName.setValue(def.defaultPrimaryTypeName());
                 ndt.setSameNameSiblings(def.sameNameSiblings());
-            });
+            }));
 
         final String[] requiredPrimaryTypeNames = Stream.concat(Stream.of(annotatedRequiredPrimaryTypeNames.getValue()),
             getRequiredPrimaryTypes().stream().map(JcrLiteral::fullname)).distinct().toArray(String[]::new);
@@ -164,7 +164,7 @@ public interface JcrChild<N extends Enum<N> & JcrChild<N>> extends JcrSource<N> 
     /**
      * Get the default primary node type as a {@link JcrNode}. Returning a value is mutually incompatible with a
      * non-blank value of {@link ChildNodeDefinition#defaultPrimaryTypeName()}.
-     * 
+     *
      * @return {@link JcrNode}
      */
     default JcrNode<?> getDefaultPrimaryType() {
@@ -174,7 +174,7 @@ public interface JcrChild<N extends Enum<N> & JcrChild<N>> extends JcrSource<N> 
     /**
      * Get required primary types as a {@link Set} of {@link JcrNode}s. Values will be merged with those specified via
      * {@link ChildNodeDefinition#requiredPrimaryTypeNames()}.
-     * 
+     *
      * @return empty {@link Set}
      */
     default Set<? extends JcrNode<?>> getRequiredPrimaryTypes() {

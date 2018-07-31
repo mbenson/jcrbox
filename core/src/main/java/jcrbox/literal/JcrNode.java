@@ -34,7 +34,7 @@ import javax.jcr.nodetype.NodeTypeTemplate;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.mutable.MutableObject;
 
-import jcrbox.fp.JcrConsumer;
+import jcrbox.fp.JcrFp;
 import jcrbox.util.EnumHelper;
 
 /**
@@ -99,7 +99,7 @@ public interface JcrNode<N extends Enum<N> & JcrNode<N>> extends JcrSource<N> {
     /**
      * Configure a {@link NodeTypeTemplate} from this enum constant, using, if available, the settings declared by its
      * {@link NodeDefinition}.
-     * 
+     *
      * @param ntt
      * @return {@code ntt}
      * @throws ConstraintViolationException
@@ -107,15 +107,14 @@ public interface JcrNode<N extends Enum<N> & JcrNode<N>> extends JcrSource<N> {
     default NodeTypeTemplate configure(NodeTypeTemplate ntt) throws ConstraintViolationException {
         ntt.setName(fullname());
         final MutableObject<String[]> annotatedSupertypes = new MutableObject<>(ArrayUtils.EMPTY_STRING_ARRAY);
-        Optional.ofNullable(EnumHelper.getAnnotation(asEnum(), NodeDefinition.class))
-            .ifPresent((JcrConsumer<NodeDefinition>) def -> {
-                ntt.setAbstract(def.isAbstract());
-                annotatedSupertypes.setValue(def.supertypes());
-                ntt.setMixin(def.mixin());
-                ntt.setOrderableChildNodes(def.orderableChildNodes());
-                ntt.setPrimaryItemName(def.primaryItemName());
-                ntt.setQueryable(def.queryable());
-            });
+        Optional.ofNullable(EnumHelper.getAnnotation(asEnum(), NodeDefinition.class)).ifPresent(JcrFp.adapt(def -> {
+            ntt.setAbstract(def.isAbstract());
+            annotatedSupertypes.setValue(def.supertypes());
+            ntt.setMixin(def.mixin());
+            ntt.setOrderableChildNodes(def.orderableChildNodes());
+            ntt.setPrimaryItemName(def.primaryItemName());
+            ntt.setQueryable(def.queryable());
+        }));
 
         final String[] supertypes =
             Stream.concat(Stream.of(annotatedSupertypes.getValue()), getSupertypes().stream().map(JcrLiteral::fullname))
@@ -130,7 +129,7 @@ public interface JcrNode<N extends Enum<N> & JcrNode<N>> extends JcrSource<N> {
     /**
      * Return the set of {@link JcrNode} types that make up supertypes of the modeled (top-level) node type. This method
      * can be overridden by individual {@link JcrNode} instances.
-     * 
+     *
      * @return empty {@link Set}
      */
     default Set<? extends JcrNode<?>> getSupertypes() {
@@ -162,7 +161,7 @@ public interface JcrNode<N extends Enum<N> & JcrNode<N>> extends JcrSource<N> {
 
     /**
      * Learn whether the node type modeled by this enum is assignable from the specified {@link NodeType}.
-     * 
+     *
      * @param nodeType
      * @return {@code boolean}
      * @throws RepositoryException
