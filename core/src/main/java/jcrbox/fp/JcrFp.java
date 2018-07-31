@@ -16,6 +16,7 @@
 package jcrbox.fp;
 
 import java.util.function.BiConsumer;
+import java.util.function.BiFunction;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Predicate;
@@ -29,7 +30,7 @@ public class JcrFp {
 
     /**
      * Adapt a {@link JcrBiConsumer}.
-     * 
+     *
      * @param arg
      * @return {@link BiConsumer}
      */
@@ -38,8 +39,18 @@ public class JcrFp {
     }
 
     /**
+     * Adapt a {@link JcrBiFunction}.
+     *
+     * @param arg
+     * @return {@link BiFunction}
+     */
+    public static <T, U, R> BiFunction<T, U, R> adapt(JcrBiFunction<T, U, R> arg) {
+        return arg;
+    }
+
+    /**
      * Adapt a {@link JcrConsumer}.
-     * 
+     *
      * @param arg
      * @return {@link Consumer}
      */
@@ -49,7 +60,7 @@ public class JcrFp {
 
     /**
      * Adapt a {@link JcrFunction}.
-     * 
+     *
      * @param arg
      * @return {@link Function}
      */
@@ -59,7 +70,7 @@ public class JcrFp {
 
     /**
      * Adapt a {@link JcrIterable}.
-     * 
+     *
      * @param arg
      * @return {@link Iterable}
      */
@@ -69,7 +80,7 @@ public class JcrFp {
 
     /**
      * Adapt a {@link JcrOperator}.
-     * 
+     *
      * @param arg
      * @return {@link UnaryOperator}
      */
@@ -79,7 +90,7 @@ public class JcrFp {
 
     /**
      * Adapt a {@link JcrPredicate}.
-     * 
+     *
      * @param arg
      * @return {@link Predicate}
      */
@@ -89,7 +100,7 @@ public class JcrFp {
 
     /**
      * Adapt a {@link JcrSupplier}.
-     * 
+     *
      * @param arg
      * @return {@link Supplier}
      */
