@@ -17,6 +17,7 @@ package jcrbox.fp;
 
 import java.util.function.BiConsumer;
 import java.util.function.BiFunction;
+import java.util.function.BiPredicate;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Predicate;
@@ -27,6 +28,16 @@ import java.util.function.UnaryOperator;
  * Utility class for JCR functional programming.
  */
 public class JcrFp {
+
+    /**
+     * Adapt a {@link JcrBiPredicate}.
+     *
+     * @param arg
+     * @return {@link BiPredicate}
+     */
+    public static <L, R> BiPredicate<L, R> adapt(JcrBiPredicate<L, R> arg) {
+        return arg;
+    }
 
     /**
      * Adapt a {@link JcrBiConsumer}.
