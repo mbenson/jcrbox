@@ -10,7 +10,7 @@ Utility library for Java Content Repository API
 ## core
 Core functionality is provided by the `jcrbox` module.
 
-_Note: jcrbox support for Java lambda functions is all specified in terms of extended `@FunctionalInterface` types, all of which rethrow JCR `RepositoryException`s wrapped as `java.lang.RuntimeException`s._
+_Note: jcrbox support for Java lambda functions is all specified in terms of extended `@FunctionalInterface` types, all of which rethrow JCR `RepositoryException`s wrapped as `java.lang.RuntimeException`s._ The `JcrFp` utility class provides an overloaded `#adapt()` method which allows a cast-free way to specify a JCR functional interface in place of supported core Java functional interfaces.
 
 ### base API
 
