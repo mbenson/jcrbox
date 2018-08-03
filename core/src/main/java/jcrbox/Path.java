@@ -25,6 +25,7 @@ import java.util.function.Supplier;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import javax.jcr.NamespaceException;
 import javax.jcr.NamespaceRegistry;
 import javax.jcr.RepositoryException;
 
@@ -88,6 +89,24 @@ public class Path implements Iterable<Path.Element> {
         @Override
         public String toString() {
             return ns.isEmpty() ? name : String.format("{%s}%s", ns, name);
+        }
+
+        /**
+         * Render this {@link Element} using the specified {@link NamespaceRegistry}.
+         *
+         * @param namespaceRegistry
+         * @return {@link StringIndexOutOfBoundsException}
+         * @throws RepositoryException
+         */
+        public String toString(NamespaceRegistry namespaceRegistry) throws RepositoryException {
+            if (ns.isEmpty()) {
+                return name;
+            }
+            try {
+                return String.format("%s:%s", namespaceRegistry.getPrefix(ns), name);
+            } catch (NamespaceException e) {
+            }
+            return toString();
         }
     }
 
@@ -269,7 +288,7 @@ public class Path implements Iterable<Path.Element> {
 
     /**
      * Learn whether this {@link Path} is absolute.
-     * 
+     *
      * @return {@code boolean}
      */
     public boolean isAbsolute() {
@@ -278,7 +297,7 @@ public class Path implements Iterable<Path.Element> {
 
     /**
      * Learn whether this {@link Path} is relative.
-     * 
+     *
      * @return {@code boolean}
      */
     public boolean isRelative() {
@@ -287,7 +306,7 @@ public class Path implements Iterable<Path.Element> {
 
     /**
      * Learn whether this {@link Path} is empty.
-     * 
+     *
      * @return {@code boolean}
      */
     public boolean isEmpty() {
@@ -304,7 +323,7 @@ public class Path implements Iterable<Path.Element> {
 
     /**
      * Return a {@link Stream} of the {@link Element}s of this {@link Path}.
-     * 
+     *
      * @return {@link Stream}
      */
     public Stream<Element> stream() {
@@ -313,7 +332,7 @@ public class Path implements Iterable<Path.Element> {
 
     /**
      * Get a {@link Path} representing the parent of this {@link Path}. An empty {@link Path} is its own parent.
-     * 
+     *
      * @return {@link Path}
      */
     public Path parent() {
@@ -325,7 +344,7 @@ public class Path implements Iterable<Path.Element> {
 
     /**
      * Return this path in absolute form.
-     * 
+     *
      * @return {@link Path}
      */
     public Path absolute() {
@@ -334,7 +353,7 @@ public class Path implements Iterable<Path.Element> {
 
     /**
      * Return this path in relative form.
-     * 
+     *
      * @return {@link Path}
      */
     public Path relative() {
@@ -351,7 +370,7 @@ public class Path implements Iterable<Path.Element> {
         }
         if (obj instanceof Path) {
             final Path other = (Path) obj;
-            return (absolute == other.absolute) && elements.equals(other.elements);
+            return absolute == other.absolute && elements.equals(other.elements);
         }
         return false;
     }
@@ -373,8 +392,32 @@ public class Path implements Iterable<Path.Element> {
     }
 
     /**
+     * Render to {@link String} using the specified {@link NamespaceRegistry}.
+     *
+     * @param namespaceRegistry
+     * @return {@link String}
+     * @throws RepositoryException
+     */
+    public String toString(NamespaceRegistry namespaceRegistry) throws RepositoryException {
+        final StringBuilder buf = new StringBuilder();
+        if (isAbsolute()) {
+            buf.append('/');
+        }
+        boolean first = true;
+        for (Element e : elements) {
+            if (first) {
+                first = false;
+            } else {
+                buf.append('/');
+            }
+            buf.append(e.toString(namespaceRegistry));
+        }
+        return buf.toString();
+    }
+
+    /**
      * Get a path builder whose result will be a child of this {@link Path}.
-     * 
+     *
      * @return {@link Path.Builder}
      */
     public Builder child() {
