@@ -131,7 +131,7 @@ public class JcrConfiguration {
      * @throws RepositoryException
      */
     @Bean
-    @ConditionalOnMissingBean(Repository.class)
+    @ConditionalOnMissingBean
     public Repository repository(JcrProperties jcrProperties) throws RepositoryException {
         for (RepositoryFactory repositoryFactory : ServiceLoader.load(RepositoryFactory.class)) {
             final Repository repository = repositoryFactory.getRepository(jcrProperties.getRepositoryParameters());
@@ -150,6 +150,7 @@ public class JcrConfiguration {
      * @throws RepositoryException
      */
     @Bean(destroyMethod = "logout")
+    @ConditionalOnMissingBean
     public Session jcrSession(Repository repository) throws RepositoryException {
         return repository.login();
     }
