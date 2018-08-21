@@ -27,6 +27,7 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
 public class JcrProperties {
 
     private final Map<String, String> repositoryParameters = new LinkedHashMap<>();
+    private boolean allowMetaUpdates;
 
     /**
      * Get the repository parameters map.
@@ -35,5 +36,21 @@ public class JcrProperties {
      */
     public Map<String, String> getRepositoryParameters() {
         return repositoryParameters;
+    }
+
+    /**
+     * Get the {@code allowMetaUpdates}.
+     * @return boolean
+     */
+    public boolean isAllowMetaUpdates() {
+        return allowMetaUpdates;
+    }
+
+    /**
+     * Set the {@code allowMetaUpdates.
+     * @param allowMetaUpdates boolean
+     */
+    public void setAllowMetaUpdates(boolean allowMetaUpdates) {
+        this.allowMetaUpdates = allowMetaUpdates;
     }
 }

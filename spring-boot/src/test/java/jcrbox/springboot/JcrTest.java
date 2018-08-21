@@ -28,7 +28,6 @@ import javax.jcr.Binary;
 import javax.jcr.Property;
 import javax.jcr.PropertyType;
 import javax.jcr.RepositoryException;
-import javax.jcr.Session;
 import javax.jcr.nodetype.NodeType;
 import javax.jcr.nodetype.NodeTypeManager;
 import javax.jcr.query.qom.Comparison;
@@ -64,7 +63,12 @@ import jcrbox.springboot.TestJcrStructure.Queries.VerifiedCustomerInvoices;
 import jcrbox.springboot.TestJcrStructure.Queries.VerifiedCustomers;
 
 @RunWith(SpringJUnit4ClassRunner.class)
-@SpringBootTest(properties = "jcr.repository-parameters.name=test-repo", classes = JcrTest.Application.class)
+@SpringBootTest(
+    properties = {
+        "jcr.repository-parameters.name=test-repo",
+        "jcr.allow-meta-updates=true"
+    },
+    classes = JcrTest.Application.class)
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
 public class JcrTest {
 
@@ -250,7 +254,7 @@ public class JcrTest {
         }
 
         @Bean
-        public QueryBuilder.Strong<CreatedInvoices> createdInvoices(Session session) {
+        public QueryBuilder.Strong<CreatedInvoices> createdInvoices() {
             return new QueryBuilder.Strong<CreatedInvoices>() {
 
                 @Override

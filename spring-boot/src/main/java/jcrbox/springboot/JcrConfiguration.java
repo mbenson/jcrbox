@@ -33,7 +33,9 @@ import org.modeshape.jcr.ModeShapeEngine;
 import org.modeshape.jcr.RepositoryConfiguration;
 import org.modeshape.schematic.DocumentFactory;
 import org.modeshape.schematic.document.EditableDocument;
+import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.config.BeanPostProcessor;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
@@ -50,6 +52,69 @@ import jcrbox.query.QueryBuilder;
 @Configuration
 @EnableConfigurationProperties(JcrProperties.class)
 public class JcrConfiguration {
+
+    /**
+     * Nested configuration for repository initialization.
+     */
+    @Configuration
+    @EnableConfigurationProperties(JcrProperties.class)
+    public static class RepoInitConfiguration {
+        private @Autowired JcrProperties jcrProperties;
+        private @Autowired Optional<List<JcrConsumer<Jcr>>> jcrConfigurers;
+        private @Autowired Optional<List<QueryBuilder.Strong<?>>> queryBuilders;
+
+        /**
+         * Bean producer method for a {@link BeanPostProcessor} to initialize a JCR repository.
+         * 
+         * @return {@link BeanPostProcessor}
+         */
+        @Bean
+        public BeanPostProcessor initializeRepository() {
+
+            return new BeanPostProcessor() {
+
+                /**
+                 * {@inheritDoc}
+                 */
+                @Override
+                public Object postProcessBeforeInitialization(Object bean, String beanName) throws BeansException {
+                    return bean;
+                }
+
+                /**
+                 * {@inheritDoc}
+                 */
+                @Override
+                public Object postProcessAfterInitialization(Object bean, String beanName) throws BeansException {
+                    if (jcrProperties.isAllowMetaUpdates() && bean instanceof Repository) {
+                        // get a dedicated init session:
+                        final Session session;
+                        try {
+                            session = ((Repository) bean).login();
+                        } catch (RepositoryException e) {
+                            throw new IllegalStateException(
+                                "Could not create JCR session for repository initialization", e);
+                        }
+                        try {
+                            final Jcr jcr = new Jcr(session).allowMetaUpdates(true);
+                            jcrConfigurers.ifPresent(l -> l.forEach(cfg -> cfg.accept(jcr)));
+                            queryBuilders
+                                .ifPresent(l -> l.forEach((JcrConsumer<QueryBuilder.Strong<?>>) jcr::getOrStoreQuery));
+
+                            if (session.hasPendingChanges()) {
+                                session.save();
+                            }
+                        } catch (RepositoryException e) {
+                            throw new IllegalStateException("Unable to save repository metadata changes", e);
+                        } finally {
+                            session.logout();
+                        }
+                    }
+                    return bean;
+                }
+            };
+        }
+    }
 
     /**
      * {@link ModeShape} configuration.
@@ -164,13 +229,7 @@ public class JcrConfiguration {
      * @return {@link Jcr}
      */
     @Bean
-    public Jcr jcr(Session session, Optional<List<JcrConsumer<Jcr>>> jcrConfigurers,
-        Optional<List<QueryBuilder.Strong<?>>> queryBuilders) {
-        final Jcr jcr = new Jcr(session);
-
-        jcrConfigurers.ifPresent(l -> l.forEach(cfg -> cfg.accept(jcr)));
-        queryBuilders.ifPresent(l -> l.forEach((JcrConsumer<QueryBuilder.Strong<?>>) jcr::getOrStoreQuery));
-
-        return jcr;
+    public Jcr jcr(Session session, JcrProperties jcrProperties) {
+        return new Jcr(session).allowMetaUpdates(jcrProperties.isAllowMetaUpdates());
     }
 }
