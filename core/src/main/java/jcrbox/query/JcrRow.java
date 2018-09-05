@@ -170,7 +170,7 @@ public interface JcrRow extends Row {
     /**
      * Get the node specified by {@code node}.
      * 
-     * @param source
+     * @param source not {@code null}
      * @return {@link NodeTypeExistsException}
      * @throws RepositoryException
      * @see {@link JcrNode#selectorName()}
@@ -182,7 +182,7 @@ public interface JcrRow extends Row {
     /**
      * Adapt the specified node to the {@link WithNode} API.
      * 
-     * @param source
+     * @param source not {@code null}
      * @return {@link WithNode}
      * @throws RepositoryException
      * @see {@link #withNode(String)}
@@ -190,6 +190,28 @@ public interface JcrRow extends Row {
      */
     default WithNode withNode(JcrSource<?> source) throws RepositoryException {
         return withNode(source.selectorName());
+    }
+
+    /**
+     * Learn whether this {@link JcrRow} contains a node corresponding to the specified {@code selectorName}.
+     * 
+     * @param selectorName
+     * @return {@code boolean}
+     * @throws RepositoryException
+     */
+    default boolean hasNode(String selectorName) throws RepositoryException {
+        return getNode(selectorName) != null;
+    }
+
+    /**
+     * Learn whether this {@link JcrRow} contains a node corresponding to the specified {@link JcrSource}.
+     * 
+     * @param source not {@code null}
+     * @return {@code boolean}
+     * @throws RepositoryException
+     */
+    default boolean hasNode(JcrSource<?> source) throws RepositoryException {
+        return hasNode(source.selectorName());
     }
 
     /**
