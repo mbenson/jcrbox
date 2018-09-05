@@ -43,6 +43,14 @@ public class QueryParameter {
      */
     public final Value value;
 
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public String toString() {
+        return String.format("%s %s: %s", getClass().getSimpleName(), name, value);
+    }
+
     private QueryParameter(String name, Value value) {
         super();
         this.name = name;
