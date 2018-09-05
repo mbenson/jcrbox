@@ -506,7 +506,7 @@ public class Jcr {
      * Execute a query specifying a page of results.
      *
      * @param q
-     * @param page
+     * @param page, 1-based
      * @param pageSize
      * @param parameters
      * @return {@link JcrResult}
@@ -515,7 +515,7 @@ public class Jcr {
     public JcrResult execute(Query q, long page, long pageSize, QueryParameter... parameters)
         throws RepositoryException {
         q.setLimit(pageSize);
-        q.setOffset(pageSize * page);
+        q.setOffset(pageSize * (page - 1));
         return execute(q, parameters);
     }
 
