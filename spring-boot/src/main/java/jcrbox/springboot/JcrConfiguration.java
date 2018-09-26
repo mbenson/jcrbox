@@ -41,6 +41,7 @@ import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.core.annotation.AnnotationAwareOrderComparator;
 
 import jcrbox.Jcr;
 import jcrbox.fp.JcrConsumer;
@@ -97,7 +98,10 @@ public class JcrConfiguration {
                         }
                         try {
                             final Jcr jcr = new Jcr(session).allowMetaUpdates(true);
-                            jcrConfigurers.ifPresent(l -> l.forEach(cfg -> cfg.accept(jcr)));
+
+                            jcrConfigurers.ifPresent(l -> l.stream().sorted(AnnotationAwareOrderComparator.INSTANCE)
+                                .forEach(cfg -> cfg.accept(jcr)));
+
                             queryBuilders
                                 .ifPresent(l -> l.forEach((JcrConsumer<QueryBuilder.Strong<?>>) jcr::getOrStoreQuery));
 
