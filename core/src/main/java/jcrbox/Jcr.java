@@ -86,6 +86,16 @@ public class Jcr {
         this.allowMetaUpdates = allowMetaUpdates;
         return this;
     }
+    
+    /**
+     * Get a strongly typed {@link Session}.
+     * @param <S> inferred type
+     * @return {@code S}
+     */
+    @SuppressWarnings("unchecked")
+    public <S extends Session> S getSession() {
+        return (S) session;
+    }
 
     /**
      * Get a {@link WithNode} wrapping the {@link Node} at {@code path}.
