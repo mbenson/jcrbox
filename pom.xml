@@ -20,12 +20,6 @@
   xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
   <modelVersion>4.0.0</modelVersion>
 
-  <parent>
-    <groupId>org.sonatype.oss</groupId>
-    <artifactId>oss-parent</artifactId>
-    <version>9</version>
-  </parent>
-
   <groupId>com.github.mbenson</groupId>
   <artifactId>jcrbox-parent</artifactId>
   <version>1.0-SNAPSHOT</version>
@@ -48,6 +42,13 @@
     <slf4j.version>1.7.13</slf4j.version>
     <gpg.keyname>Matt Benson (com.github.mbenson code signing key)</gpg.keyname>
   </properties>
+
+  <distributionManagement>
+    <snapshotRepository>
+      <id>ossrh</id>
+      <url>https://oss.sonatype.org/content/repositories/snapshots</url>
+    </snapshotRepository>
+  </distributionManagement>
 
   <developers>
     <developer>
@@ -131,6 +132,11 @@
           <artifactId>maven-source-plugin</artifactId>
           <version>3.0.1</version>
         </plugin>
+        <plugin>
+          <groupId>org.sonatype.plugins</groupId>
+          <artifactId>nexus-staging-maven-plugin</artifactId>
+          <version>1.6.8</version>
+        </plugin>
       </plugins>
     </pluginManagement>
     <plugins>
@@ -203,6 +209,17 @@
           <arguments>-Dmaven.javadoc.failOnError=false</arguments>
           <autoVersionSubmodules>true</autoVersionSubmodules>
           <tagNameFormat>jcrbox-@{project.version}</tagNameFormat>
+          <useReleaseProfile>false</useReleaseProfile>
+        </configuration>
+      </plugin>
+      <plugin>
+        <groupId>org.sonatype.plugins</groupId>
+        <artifactId>nexus-staging-maven-plugin</artifactId>
+        <extensions>true</extensions>
+        <configuration>
+          <serverId>ossrh</serverId>
+          <nexusUrl>https://oss.sonatype.org/</nexusUrl>
+          <autoReleaseAfterClose>true</autoReleaseAfterClose>
         </configuration>
       </plugin>
     </plugins>
