@@ -202,7 +202,7 @@
         <configuration>
           <arguments>-Dmaven.javadoc.failOnError=false</arguments>
           <autoVersionSubmodules>true</autoVersionSubmodules>
-          <tagNameFormat>therian-@{project.version}</tagNameFormat>
+          <tagNameFormat>jcrbox-@{project.version}</tagNameFormat>
         </configuration>
       </plugin>
     </plugins>
