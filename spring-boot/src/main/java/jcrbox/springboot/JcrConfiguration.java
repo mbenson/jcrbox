@@ -33,6 +33,8 @@ import org.modeshape.jcr.ModeShapeEngine;
 import org.modeshape.jcr.RepositoryConfiguration;
 import org.modeshape.schematic.DocumentFactory;
 import org.modeshape.schematic.document.EditableDocument;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.config.BeanPostProcessor;
@@ -53,6 +55,7 @@ import jcrbox.query.QueryBuilder;
 @Configuration
 @EnableConfigurationProperties(JcrProperties.class)
 public class JcrConfiguration {
+    private static final Logger log = LoggerFactory.getLogger(JcrConfiguration.class);
 
     /**
      * Nested configuration for repository initialization.
@@ -159,7 +162,9 @@ public class JcrConfiguration {
                 final ListIterator<String> path = Arrays.asList(StringUtils.split(k, '.')).listIterator();
                 findDocument(document, path).set(path.next(), v);
             });
-            return new RepositoryConfiguration(document, DEFAULT_REPO_NAME);
+            final RepositoryConfiguration result = new RepositoryConfiguration(document, DEFAULT_REPO_NAME);
+            log.debug("Using ModeShape configuration {}", result);
+            return result;
         }
 
         private EditableDocument findDocument(EditableDocument parent, ListIterator<String> path) {
