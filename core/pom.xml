@@ -26,7 +26,8 @@
     <version>1.0-SNAPSHOT</version>
   </parent>
   <artifactId>jcrbox</artifactId>
-  <name>jcrbox</name>
+  <name>${project.groupId}:${project.artifactId}</name>
+  <description>JCR Utility Library</description>
   <dependencies>
     <dependency>
       <groupId>org.apache.commons</groupId>
